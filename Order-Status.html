@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Order Status – Madhavi Enterprises</title>
+  <style>
+    :root {
+      --primary: #0066c0;
+      --primary-dark: #004a8f;
+      --background: #f3f6fa;
+      --card-bg: #fff;
+      --border: #e0e6ed;
+      --radius: 12px;
+      --shadow: 0 2px 12px rgba(0,0,0,0.07);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--background);
+      color: #222;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      min-height: 100vh;
+    }
+    header.site-header {
+      background: var(--card-bg);
+      box-shadow: var(--shadow);
+      padding: 1.5rem 2rem 1rem 2rem;
+      margin-bottom: 2.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+    }
+    nav.nav-bar {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+    }
+    nav.nav-bar a {
+      text-decoration: none;
+      color: #555;
+      font-weight: 500;
+      transition: color 0.2s;
+      position: relative;
+      padding: 0.2rem 0.3rem;
+    }
+    nav.nav-bar a.active,
+    nav.nav-bar a:hover {
+      color: var(--primary);
+    }
+    nav.nav-bar .cart-link {
+      display: flex;
+      align-items: center;
+      gap: 0.4em;
+      font-weight: bold;
+    }
+    nav.nav-bar .cart-count {
+      background: var(--primary);
+      color: #fff;
+      border-radius: 50%;
+      padding: 0.15em 0.6em;
+      font-size: 0.95em;
+      margin-left: 0.15em;
+      min-width: 1.8em;
+      text-align: center;
+      display: inline-block;
+    }
+    main {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 0 1.5rem 2rem 1.5rem;
+    }
+    main h1 {
+      font-size: 2.1rem;
+      font-weight: 700;
+      margin-bottom: 2rem;
+      text-align: center;
+      color: var(--primary-dark);
+    }
+    .order-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 2rem 1.5rem 1.5rem 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .order-success {
+      color: var(--primary-dark);
+      font-size: 1.25rem;
+      margin-bottom: 0.7rem;
+      font-weight: bold;
+      text-align: center;
+    }
+    .order-info {
+      margin-bottom: 1.5rem;
+      font-size: 1.06rem;
+      color: #1a1a1a;
+    }
+    .order-items {
+      margin-bottom: 1.5rem;
+    }
+    .order-items ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .order-items li {
+      padding: 0.5em 0 0.5em 0;
+      border-bottom: 1px solid #eee;
+      font-size: 1.02rem;
+    }
+    .order-items li:last-child {
+      border-bottom: none;
+    }
+    .order-total {
+      font-weight: bold;
+      font-size: 1.18rem;
+      margin-bottom: 1.1rem;
+      text-align: right;
+      color: var(--primary);
+    }
+    .order-status {
+      background: #e5f1ff;
+      border-radius: 8px;
+      padding: 0.65rem 1.2rem;
+      color: #003366;
+      display: inline-block;
+      margin-bottom: 1.1rem;
+      font-weight: 500;
+      font-size: 1.07rem;
+    }
+    .btn {
+      display: inline-block;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      padding: 0.68rem 1.5rem;
+      font-size: 1.07rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.18s;
+      box-shadow: 0 2px 6px rgba(0,102,192,0.04);
+      text-align: center;
+      text-decoration: none;
+      width: 100%;
+      margin: 1.1rem 0 0 0;
+    }
+    .btn:hover {
+      background: var(--primary-dark);
+      transform: scale(1.04);
+    }
+    .empty-order {
+      text-align: center;
+      color: #888;
+      font-size: 1.2rem;
+      margin: 2.5rem 0;
+    }
+    @media (max-width: 700px) {
+      header.site-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1.2rem;
+        padding: 1.2rem 0.7rem 1rem 0.7rem;
+      }
+      main {
+        padding: 0 0.4rem 2rem 0.4rem;
+      }
+      .order-box {
+        padding: 1.2rem 0.5rem 1rem 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav-bar">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="products.html">Products</a>
+      <a href="conformation page.html">Final</a>
+      <a href="cart.html" class="cart-link">
+        Cart
+        <span class="cart-count">0</span>
+      </a>
+    </nav>
+  </header>
+  <main>
+    <h1>Order Status</h1>
+    <div class="order-box" id="order-box">
+      <!-- Order details will appear here -->
+    </div>
+    <a href="products.html" class="btn">← Continue Shopping</a>
+  </main>
+  <script>
+    function updateCartCount() {
+      document.querySelectorAll('.cart-count').forEach(span => {
+        span.textContent = 0;
+      });
+    }
+    function renderOrder() {
+      const box = document.getElementById('order-box');
+      const order = JSON.parse(localStorage.getItem('lastOrder') || "null");
+      if (!order) {
+        box.innerHTML = "<div class='empty-order'>No recent order found.<br><a href='products.html'>Shop now</a></div>";
+        return;
+      }
+      let payment = order.paymentMethod === "cod" ? "Cash on Delivery"
+        : (order.paymentMethod === "card" ? "Credit/Debit Card" : "UPI");
+      let itemsHtml = order.cart.map(item =>
+        `<li>${item.name} × ${item.qty}</li>`
+      ).join('');
+      box.innerHTML = `
+        <div class="order-success">🎉 Thank you, your order has been placed!</div>
+        <div class="order-status">Order Status: <b>${order.status}</b></div>
+        <div class="order-info">
+          <b>Name:</b> ${order.name}<br>
+          <b>Address:</b> ${order.address.replace(/\n/g,'<br>')}<br>
+          <b>Payment:</b> ${payment}<br>
+          <b>Order Time:</b> ${order.orderTime}
+        </div>
+        <div class="order-items">
+          <b>Items:</b>
+          <ul>${itemsHtml}</ul>
+        </div>
+        <div class="order-total">Total Paid: ₹${order.total}</div>
+      `;
+      // Clear the cart count (cart is already cleared)
+      updateCartCount();
+    }
+    document.addEventListener("DOMContentLoaded", renderOrder);
+  </script>
+</body>
+</html>

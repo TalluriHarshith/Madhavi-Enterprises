@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Audio and Video Side by Side</title>
+  <style>
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+    .frame {
+      flex: 1;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="frame">
+      <h2>Audio</h2>
+      <audio controls>
+        <source src="C:/Users/Lenovo i7/Downloads/song.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+      </audio>
+    </div>
+    <div class="frame">
+      <h2>Video</h2>
+      <video width="100%" controls>
+        <source src="C:\Users\Lenovo i7\Documents\Arduino\intellegent_solar.mp4" type="video/mp4"> type="video/mp4">
+        Your browser does not support the video element.
+      </video>
+    </div>
+  </div>
+</body>
+</html>

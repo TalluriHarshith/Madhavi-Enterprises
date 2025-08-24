@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Payment – Madhavi Enterprises</title>
+  <style>
+    :root {
+      --primary: #0066c0;
+      --primary-dark: #004a8f;
+      --background: #f3f6fa;
+      --card-bg: #fff;
+      --border: #e0e6ed;
+      --radius: 12px;
+      --shadow: 0 2px 12px rgba(0,0,0,0.07);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--background);
+      color: #222;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      min-height: 100vh;
+    }
+    header.site-header {
+      background: var(--card-bg);
+      box-shadow: var(--shadow);
+      padding: 1.5rem 2rem 1rem 2rem;
+      margin-bottom: 2.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+    }
+    nav.nav-bar {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+    }
+    nav.nav-bar a {
+      text-decoration: none;
+      color: #555;
+      font-weight: 500;
+      transition: color 0.2s;
+      position: relative;
+      padding: 0.2rem 0.3rem;
+    }
+    nav.nav-bar a.active,
+    nav.nav-bar a:hover {
+      color: var(--primary);
+    }
+    nav.nav-bar .cart-link {
+      display: flex;
+      align-items: center;
+      gap: 0.4em;
+      font-weight: bold;
+    }
+    nav.nav-bar .cart-count {
+      background: var(--primary);
+      color: #fff;
+      border-radius: 50%;
+      padding: 0.15em 0.6em;
+      font-size: 0.95em;
+      margin-left: 0.15em;
+      min-width: 1.8em;
+      text-align: center;
+      display: inline-block;
+    }
+    main {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 0 1.5rem 2rem 1.5rem;
+    }
+    main h1 {
+      font-size: 2.1rem;
+      font-weight: 700;
+      margin-bottom: 2rem;
+      text-align: center;
+      color: var(--primary-dark);
+    }
+    .payment-form {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 2rem 1.5rem 1.5rem 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 0.7rem;
+      border: 1px solid #ccd6e6;
+      border-radius: 6px;
+      font-size: 1rem;
+      background: #fafbfc;
+    }
+    .summary-box {
+      background: #e5f1ff;
+      border: 1px solid var(--primary);
+      border-radius: 8px;
+      padding: 1rem 1.2rem;
+      margin-bottom: 1.1rem;
+      font-size: 1.07rem;
+      color: #003366;
+    }
+    .btn {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      padding: 0.68rem 1.5rem;
+      font-size: 1.07rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.18s;
+      box-shadow: 0 2px 6px rgba(0,102,192,0.04);
+      text-align: center;
+      text-decoration: none;
+      width: 100%;
+      margin-top: 1rem;
+    }
+    .btn:hover {
+      background: var(--primary-dark);
+      transform: scale(1.04);
+    }
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 1.3rem;
+      color: var(--primary-dark);
+      text-decoration: none;
+      font-size: 1.05rem;
+      font-weight: 500;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    @media (max-width: 700px) {
+      header.site-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1.2rem;
+        padding: 1.2rem 0.7rem 1rem 0.7rem;
+      }
+      main {
+        padding: 0 0.4rem 2rem 0.4rem;
+      }
+      .payment-form {
+        padding: 1.2rem 0.5rem 1rem 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav-bar">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="products.html">Products</a>
+      <a href="conformation page.html">Final</a>
+      <a href="cart.html" class="cart-link">
+        Cart
+        <span class="cart-count">0</span>
+      </a>
+    </nav>
+  </header>
+  <main>
+    <h1>Payment</h1>
+    <div class="summary-box" id="cart-summary"></div>
+    <form class="payment-form" id="paymentForm">
+      <div class="form-group">
+        <label for="fullname">Full Name</label>
+        <input type="text" id="fullname" required autocomplete="name" />
+      </div>
+      <div class="form-group">
+        <label for="address">Delivery Address</label>
+        <textarea id="address" rows="3" required autocomplete="street-address"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="paymentMethod">Payment Method</label>
+        <select id="paymentMethod" required>
+          <option value="cod">Cash on Delivery</option>
+          <option value="card">Credit/Debit Card</option>
+          <option value="upi">UPI</option>
+        </select>
+      </div>
+      <div id="card-fields" style="display:none;">
+        <div class="form-group">
+          <label for="cardNumber">Card Number</label>
+          <input type="text" id="cardNumber" maxlength="19" pattern="[0-9 ]+" placeholder="1234 5678 9012 3456" />
+        </div>
+        <div class="form-group">
+          <label for="expiry">Expiry Date</label>
+          <input type="text" id="expiry" maxlength="5" pattern="[0-9/]+" placeholder="MM/YY" />
+        </div>
+        <div class="form-group">
+          <label for="cvv">CVV</label>
+          <input type="password" id="cvv" maxlength="3" pattern="[0-9]{3}" placeholder="123" />
+        </div>
+      </div>
+      <div id="upi-field" style="display:none;">
+        <div class="form-group">
+          <label for="upiId">UPI ID</label>
+          <input type="text" id="upiId" placeholder="example@upi" />
+        </div>
+      </div>
+      <button class="btn" type="submit">Pay Now</button>
+    </form>
+    <a href="cart.html" class="back-link">← Back to Cart</a>
+  </main>
+  <script>
+    // Product price & info as in products.html
+    const productData = {
+      "Pen Alpha": { price: 20 },
+      "Marker Bold": { price: 35 },
+      "Notebook Pro": { price: 85 },
+      "School Bag": { price: 799 }
+    };
+    let cart = [];
+    function updateCartCount() {
+      const count = cart.reduce((sum, item) => sum + item.qty, 0);
+      document.querySelectorAll('.cart-count').forEach(span => {
+        span.textContent = count;
+      });
+    }
+    function getTotal() {
+      return cart.reduce((sum, item) => {
+        const product = productData[item.name];
+        if (!product) return sum;
+        return sum + product.price * item.qty;
+      }, 0);
+    }
+    function renderCartSummary() {
+      if (!cart.length) {
+        document.getElementById('cart-summary').innerHTML = 'Your cart is empty. <a href="products.html">Shop now</a>';
+        document.getElementById('paymentForm').style.display = 'none';
+        return;
+      }
+      let lines = cart.map(item => {
+        const product = productData[item.name];
+        return `<span>${item.name} × ${item.qty} = ₹${product.price * item.qty}</span>`;
+      });
+      lines.push(`<strong>Total: ₹${getTotal()}</strong>`);
+      document.getElementById('cart-summary').innerHTML = lines.join('<br>');
+    }
+    function showPaymentFields(method) {
+      document.getElementById('card-fields').style.display = (method === 'card') ? 'block' : 'none';
+      document.getElementById('upi-field').style.display = (method === 'upi') ? 'block' : 'none';
+    }
+    document.addEventListener("DOMContentLoaded", () => {
+      cart = JSON.parse(localStorage.getItem('cart') || "[]");
+      updateCartCount();
+      renderCartSummary();
+      document.getElementById('paymentMethod').addEventListener('change', (e) => {
+        showPaymentFields(e.target.value);
+      });
+      document.getElementById('paymentForm').addEventListener('submit', function(e){
+        e.preventDefault();
+        // Basic validation for card/upi fields
+        const method = document.getElementById('paymentMethod').value;
+        if (method === "card") {
+          if (!document.getElementById('cardNumber').value.trim() ||
+              !document.getElementById('expiry').value.trim() ||
+              !document.getElementById('cvv').value.trim()) {
+            alert("Please fill in all card details.");
+            return;
+          }
+        }
+        if (method === "upi") {
+          if (!document.getElementById('upiId').value.trim()) {
+            alert("Please enter your UPI ID.");
+            return;
+          }
+        }
+        // Save order info in localStorage for order-status page
+        const order = {
+          name: document.getElementById('fullname').value,
+          address: document.getElementById('address').value,
+          paymentMethod: method,
+          cart: cart,
+          total: getTotal(),
+          orderTime: new Date().toLocaleString(),
+          status: "Processing"
+        };
+        localStorage.setItem('lastOrder', JSON.stringify(order));
+        localStorage.removeItem('cart');
+        window.location.href = "order-status.html";
+      });
+    });
+  </script>
+</body>
+</html>

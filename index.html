@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Madhavi Enterprises</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+
+    header {
+    background-color: #000745; /* Navy blue */
+    padding: 20px;
+    color: #fff;
+    }
+
+    .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    }
+
+  h1 {
+  margin: 0;
+  flex: 1;
+  text-align: center;
+  font-size: 28px;
+  }
+
+  nav {
+  display: flex;
+  gap: 15px;
+  }
+
+  nav a {
+  color: #ead216; /* Bright yellow for contrast */
+  text-decoration: none;
+  font-weight: bold;
+  }
+
+
+    .hero {
+      text-align: center;
+      padding: 40px 20px;
+      background: linear-gradient(to right, #d4af37, #fff8dc);
+    }
+
+    .hero h2 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .hero p {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      background-color: #222;
+      color: #fff;
+      padding: 10px 20px;
+      text-decoration: none;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    .products {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      padding: 30px 10px;
+    }
+
+    .product-card {
+      background-color: #fff;
+      padding: 15px;
+      border: 1px solid #ddd;
+      text-align: center;
+      width: 250px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .product-card img {
+      width: 100%;
+      height: auto;
+      margin-bottom: 10px;
+    }
+
+    .product-card h3 {
+      font-size: 20px;
+      margin-bottom: 5px;
+    }
+
+    .product-card p {
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    .product-card button {
+      background-color: #222;
+      color: #fff;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+      width: 100%;
+      font-size: 16px;
+    }
+
+    footer {
+      background-color: #222;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+      font-size: 14px;
+    }
+    .brand-grid {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 40px;
+  padding: 30px;
+}
+
+.brand-grid img {
+  width: 180px; /* Increased size */
+  height: auto;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.brand-grid img:hover {
+  transform: scale(1.05);
+}
+
+
+
+    /* Responsive Design */
+    @media (max-width: 600px) {
+      .hero h2 {
+        font-size: 22px;
+      }
+
+      .hero p {
+        font-size: 16px;
+      }
+
+      nav a {
+        display: block;
+        margin: 5px 0;
+      }
+
+      .product-card {
+        width: 90%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content"></div>
+    <h1>Madhavi Enterprises</h1>
+    <nav>
+  <a href="index.html">Home</a>
+  <a href="products.html">Products</a>
+  <a href="about.html">About</a>
+  <a href="contact.html">Contact</a>
+  <a href="conformation page.html">Final</a>
+  <a href="cart.html">cart</a>
+    </div>
+</nav>
+
+  </header>
+
+  <section class="hero">
+    <h2>Welcome to Our Pen Store</h2>
+    <p>Discover premium writing instruments for every style.</p>
+    <a href="products.html" class="btn">Shop Now</a>
+  </section>
+
+  <section class="brand-logos">
+  <h2 style="text-align:center; margin: 30px 0;">Choose a Brand</h2>
+  <div class="brand-grid">
+    <a href="hauser.html">
+      <img src="hauser pen.jpg" alt="Hauser" />
+    </a>
+    <a href="flair.html">
+      <img src="flair pen.jpeg" alt="Flair" />
+    </a>
+    <a href="hauser.html">
+      <img src="REYNOLDS PEN.png" alt="Hauser" />
+    </a>
+    <a href="hauser.html">
+      <img src="PARKER PEN.png" alt="Hauser" />
+    </a>
+    <a href="hauser.html">
+      <img src="CELLO PEN.jpeg" alt="Hauser" />
+    </a>
+    <a href="hauser.html">
+      <img src="ai pens.jpg" alt="Hauser" />
+    </a>
+    <a href="hauser.html">
+      <img src="pen brand.png" alt="Hauser" />
+    </a>
+    <a href="hauser.html">
+      <img src="linc pen.jpeg" alt="Hauser" />
+    </a>
+    <a href="hauser.html">
+      <img src="rorito pen.png" alt="Hauser" />
+    </a>
+    <a href="hauser.html">
+      <img src="flair pen2.jpeg" alt="Hauser" />
+    </a>
+    <!-- Add more brands here -->
+  </div>
+  
+</section>
+
+  <footer>
+    <p>&copy; 2025 Madhavi Enterprises. All rights reserved.</p>
+  </footer>
+</body>
+</html>

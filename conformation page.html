@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Order Confirmation</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .status { font-size: 18px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <nav>
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="login.html">Login</a>
+      <a href="conformation page.html">Final</a>
+    </nav>
+  <h2>✅ Order Confirmed!</h2>
+  <p>Thank you for your purchase. Your order is being processed.</p>
+  <div class="status" id="order-summary"></div>
+  <a href="products.html">← Back to Store</a>
+
+  <script>
+    const order = JSON.parse(localStorage.getItem("lastOrder"));
+    if (order && order.length > 0) {
+      let summary = "<ul>";
+      let total = 0;
+      order.forEach(item => {
+        const itemTotal = item.price * item.quantity;
+        total += itemTotal;
+        summary += `<li>${item.name} - ₹${item.price} × ${item.quantity} = ₹${itemTotal}</li>`;
+      });
+      summary += `</ul><strong>Total: ₹${total}</strong>`;
+      document.getElementById("order-summary").innerHTML = summary;
+    } else {
+      document.getElementById("order-summary").innerText = "No recent order found.";
+    }
+  </script>
+</body>
+</html>
