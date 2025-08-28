@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Orders – Madhavi Enterprises</title>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f3f6fa; margin:0; padding:0;}
+    .container { max-width: 700px; margin: 2rem auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); padding: 2rem;}
+    h1 { color: #0066c0; margin-bottom: 2rem;}
+    .order-row { background: #e5f1ff; border-radius: 8px; padding: 1rem 1.2rem; margin-bottom: 1.1rem; font-size: 1.07rem; color: #003366; }
+    .order-row b { color: #222; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Admin: Orders Received</h1>
+    <div id="orders-list"></div>
+    <a href="index.html">Back to Home</a>
+  </div>
+  <script>
+    const orders = JSON.parse(localStorage.getItem('adminOrders') || '[]');
+    const ordersList = document.getElementById('orders-list');
+    if (!orders.length) {
+      ordersList.innerHTML = '<div class="order-row">No orders received yet.</div>';
+    } else {
+      ordersList.innerHTML = orders.map(order => {
+        let items = order.cart.map(i => `${i.name} × ${i.qty}`).join(', ');
+        return `<div class="order-row">
+          <b>Name:</b> ${order.name}<br>
+          <b>Address:</b> ${order.address}<br>
+          <b>Total:</b> ₹${order.total}<br>
+          <b>Items:</b> ${items}<br>
+          <b>Payment:</b> ${order.paymentMethod.toUpperCase()}${order.upiTxnId ? `<br><b>UPI Txn ID:</b> ${order.upiTxnId}` : ""}
+          <br><b>Status:</b> ${order.status}<br>
+          <b>Order Time:</b> ${order.orderTime}
+        </div>`;
+      }).join('');
+    }
+  </script>
+</body>
+</html>

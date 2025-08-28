@@ -274,29 +274,64 @@
     </div>
   </main>
   <script>
-    // Product price & info as in products.html
-    const productData = {
-      "Pen Alpha": {
+    const productData = [
+      {
+        name: "Pen Alpha",
         image: "hauser pen.jpg",
         brand: "hauser",
-        price: 20
+        price: 8,
+        mrp: 10,
+        discount: 20
       },
-      "Marker Bold": {
+      {
+        name: "Marker Bold",
         image: "ai pens.jpg",
         brand: "classic",
-        price: 35
+        price: 8,
+        mrp: 10,
+        discount: 20
       },
-      "Notebook Pro": {
-        image: "notebook1.png",
+      {
+        name: "Notebook Pro",
+        image: "pen1.jpeg",
         brand: "Madhavi",
-        price: 85
+        price: 85,
+        mrp: 120,
+        discount: 29
       },
-      "School Bag": {
-        image: "bag1.png",
+      {
+        name: "School Bag",
+        image: "pen2.png",
         brand: "Madhavi",
-        price: 799
+        price: 799,
+        mrp: 999,
+        discount: 20
+      },
+      {
+        name: "School Bag",
+        image: "pen2.png",
+        brand: "Madhavi",
+        price: 799,
+        mrp: 999,
+        discount: 20
+      },
+      {
+        name: "School Bag",
+        image: "pen2.png",
+        brand: "Madhavi",
+        price: 799,
+        mrp: 999,
+        discount: 20
+      },
+      {
+        name: "School Bag",
+        image: "pen2.png",
+        brand: "Madhavi",
+        price: 799,
+        mrp: 999,
+        discount: 20
       }
-    };
+    ];
 
     let cart = [];
 
@@ -336,14 +371,19 @@
       }
     }
 
+    function getProductByName(name) {
+      return productData.find(p => p.name === name);
+    }
+
     function getTotal() {
       return cart.reduce((sum, item) => {
-        const product = productData[item.name];
+        const product = getProductByName(item.name);
         if (!product) return sum;
         return sum + product.price * item.qty;
       }, 0);
     }
 
+    // UPDATED FUNCTION: Only shows selling price (₹product.price)
     function renderCart() {
       const cartContainer = document.getElementById('cart-items');
       const cartSummary = document.getElementById('cart-summary');
@@ -358,16 +398,18 @@
       }
 
       cart.forEach(item => {
-        const product = productData[item.name] || {};
+        const product = getProductByName(item.name) || {};
         const div = document.createElement('div');
         div.className = 'cart-item';
         div.innerHTML = `
           <img src="${product.image || 'placeholder.png'}" alt="${item.name}">
           <div class="cart-item-details">
-            <div class="cart-item-title">${item.name}</div>
+            <div class="cart-item-title">${product.name || item.name}</div>
             <div class="cart-item-brand">${product.brand || ''}</div>
           </div>
-          <div class="cart-item-price">₹${product.price}</div>
+          <div class="cart-item-price">
+            <span class="selling">₹${product.price || '-'}</span>
+          </div>
           <div class="cart-qty-controls">
             <button onclick="handleQtyChange('${item.name}', -1)">-</button>
             <span>${item.qty}</span>
@@ -390,7 +432,6 @@
       `;
     }
 
-    // Make functions globally available for inline onclick
     window.handleQtyChange = handleQtyChange;
     window.handleRemove = handleRemove;
     window.handleEmptyCart = handleEmptyCart;

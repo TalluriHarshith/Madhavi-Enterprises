@@ -151,6 +151,24 @@
       background: var(--primary-dark);
       transform: scale(1.04);
     }
+    .admin-btn {
+      display: block;
+      text-align: center;
+      margin: 1rem auto 0 auto;
+      background: #004a8f;
+      color: #fff;
+      padding: 0.65rem 1.1rem;
+      border-radius: 7px;
+      font-size: 1rem;
+      width: auto;
+      text-decoration: none;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+    .admin-btn:hover {
+      background: #003366;
+      text-decoration: underline;
+    }
     .empty-order {
       text-align: center;
       color: #888;
@@ -192,6 +210,7 @@
       <!-- Order details will appear here -->
     </div>
     <a href="products.html" class="btn">← Continue Shopping</a>
+    <a href="admin.html" id="admin-btn" class="admin-btn" style="display:none;">View Admin Orders</a>
   </main>
   <script>
     function updateCartCount() {
@@ -204,20 +223,26 @@
       const order = JSON.parse(localStorage.getItem('lastOrder') || "null");
       if (!order) {
         box.innerHTML = "<div class='empty-order'>No recent order found.<br><a href='products.html'>Shop now</a></div>";
+        document.getElementById('admin-btn').style.display = "none";
         return;
       }
-      let payment = order.paymentMethod === "cod" ? "Cash on Delivery"
-        : (order.paymentMethod === "card" ? "Credit/Debit Card" : "UPI");
-      let itemsHtml = order.cart.map(item =>
-        `<li>${item.name} × ${item.qty}</li>`
-      ).join('');
+      let payment =
+        order.paymentMethod === "cod"
+          ? "Cash on Delivery"
+          : order.paymentMethod === "card"
+          ? "Credit/Debit Card"
+          : "UPI";
+      let itemsHtml = order.cart
+        .map((item) => `<li>${item.name} × ${item.qty}</li>`)
+        .join("");
       box.innerHTML = `
         <div class="order-success">🎉 Thank you, your order has been placed!</div>
         <div class="order-status">Order Status: <b>${order.status}</b></div>
         <div class="order-info">
           <b>Name:</b> ${order.name}<br>
-          <b>Address:</b> ${order.address.replace(/\n/g,'<br>')}<br>
-          <b>Payment:</b> ${payment}<br>
+          <b>Address:</b> ${order.address.replace(/\n/g, "<br>")}<br>
+          <b>Payment:</b> ${payment}${order.paymentMethod === "upi" && order.upiTxnId
+            ? `<br><b>UPI Txn ID:</b> ${order.upiTxnId}` : ""}<br>
           <b>Order Time:</b> ${order.orderTime}
         </div>
         <div class="order-items">
@@ -226,6 +251,8 @@
         </div>
         <div class="order-total">Total Paid: ₹${order.total}</div>
       `;
+      // Show admin link
+      document.getElementById('admin-btn').style.display = "block";
       // Clear the cart count (cart is already cleared)
       updateCartCount();
     }

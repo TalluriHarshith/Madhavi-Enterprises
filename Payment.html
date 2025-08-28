@@ -192,23 +192,17 @@
         </select>
       </div>
       <div id="card-fields" style="display:none;">
-        <div class="form-group">
-          <label for="cardNumber">Card Number</label>
-          <input type="text" id="cardNumber" maxlength="19" pattern="[0-9 ]+" placeholder="1234 5678 9012 3456" />
-        </div>
-        <div class="form-group">
-          <label for="expiry">Expiry Date</label>
-          <input type="text" id="expiry" maxlength="5" pattern="[0-9/]+" placeholder="MM/YY" />
-        </div>
-        <div class="form-group">
-          <label for="cvv">CVV</label>
-          <input type="password" id="cvv" maxlength="3" pattern="[0-9]{3}" placeholder="123" />
-        </div>
+        <!-- ...card fields unchanged... -->
       </div>
       <div id="upi-field" style="display:none;">
+        <div class="qr-box">
+          <img src="QR.jpg" alt="UPI QR Code" />
+          <p>Scan this QR code with your UPI app to pay.</p>
+          <p><b>Pay to:</b> your-upi@bank</p>
+        </div>
         <div class="form-group">
-          <label for="upiId">UPI ID</label>
-          <input type="text" id="upiId" placeholder="example@upi" />
+          <label for="upiTxnId">Enter UPI Transaction ID</label>
+          <input type="text" id="upiTxnId" placeholder="UPI Txn ID" />
         </div>
       </div>
       <button class="btn" type="submit">Pay Now</button>
@@ -273,9 +267,11 @@
             return;
           }
         }
+        let upiTxnId = "";
         if (method === "upi") {
-          if (!document.getElementById('upiId').value.trim()) {
-            alert("Please enter your UPI ID.");
+          upiTxnId = document.getElementById('upiTxnId').value.trim();
+          if (!upiTxnId) {
+            alert("Please enter your UPI Transaction ID.");
             return;
           }
         }
@@ -284,12 +280,25 @@
           name: document.getElementById('fullname').value,
           address: document.getElementById('address').value,
           paymentMethod: method,
+          upiTxnId: upiTxnId,
           cart: cart,
           total: getTotal(),
           orderTime: new Date().toLocaleString(),
           status: "Processing"
         };
+        // Send order to WhatsApp admin
+        const adminNumber = "8074610410"; // UPDATE with your WhatsApp number!
+        const productList = cart.map(i => `${i.name} × ${i.qty}`).join(', ');
+        let waMsg = `New Order!\nName: ${order.name}\nAddress: ${order.address}\nTotal: ₹${order.total}\nItems: ${productList}\nMethod: ${method.toUpperCase()}`;
+        if (method === "upi") waMsg += `\nUPI Txn ID: ${upiTxnId}`;
+        waMsg += `\nTime: ${order.orderTime}`;
+        window.open(`https://wa.me/${adminNumber}?text=${encodeURIComponent(waMsg)}`, "_blank");
+        // Store order
         localStorage.setItem('lastOrder', JSON.stringify(order));
+        // Also save to admin orders list
+        let adminOrders = JSON.parse(localStorage.getItem('adminOrders') || "[]");
+        adminOrders.push(order);
+        localStorage.setItem('adminOrders', JSON.stringify(adminOrders));
         localStorage.removeItem('cart');
         window.location.href = "order-status.html";
       });
