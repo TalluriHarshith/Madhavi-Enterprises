@@ -274,174 +274,120 @@
     </div>
   </main>
   <script>
-    const productData = [
-      {
-        name: "Pen Alpha",
-        image: "hauser pen.jpg",
-        brand: "hauser",
-        price: 8,
-        mrp: 10,
-        discount: 20
-      },
-      {
-        name: "Marker Bold",
-        image: "ai pens.jpg",
-        brand: "classic",
-        price: 8,
-        mrp: 10,
-        discount: 20
-      },
-      {
-        name: "Notebook Pro",
-        image: "pen1.jpeg",
-        brand: "Madhavi",
-        price: 85,
-        mrp: 120,
-        discount: 29
-      },
-      {
-        name: "School Bag",
-        image: "pen2.png",
-        brand: "Madhavi",
-        price: 799,
-        mrp: 999,
-        discount: 20
-      },
-      {
-        name: "School Bag",
-        image: "pen2.png",
-        brand: "Madhavi",
-        price: 799,
-        mrp: 999,
-        discount: 20
-      },
-      {
-        name: "School Bag",
-        image: "pen2.png",
-        brand: "Madhavi",
-        price: 799,
-        mrp: 999,
-        discount: 20
-      },
-      {
-        name: "School Bag",
-        image: "pen2.png",
-        brand: "Madhavi",
-        price: 799,
-        mrp: 999,
-        discount: 20
-      }
-    ];
+let productData = [];
+let cart = [];
 
-    let cart = [];
+function updateCartCount() {
+  const count = cart.reduce((sum, item) => sum + item.qty, 0);
+  document.querySelectorAll('.cart-count').forEach(span => {
+    span.textContent = count;
+  });
+}
 
-    function updateCartCount() {
-      const count = cart.reduce((sum, item) => sum + item.qty, 0);
-      document.querySelectorAll('.cart-count').forEach(span => {
-        span.textContent = count;
-      });
-    }
+function saveCart() {
+  localStorage.setItem('cart', JSON.stringify(cart));
+  updateCartCount();
+}
 
-    function saveCart() {
-      localStorage.setItem('cart', JSON.stringify(cart));
-      updateCartCount();
-    }
+function handleQtyChange(itemName, delta) {
+  const idx = cart.findIndex(item => item.name === itemName);
+  if (idx !== -1) {
+    cart[idx].qty += delta;
+    if (cart[idx].qty < 1) cart[idx].qty = 1;
+    saveCart();
+    renderCart();
+  }
+}
 
-    function handleQtyChange(itemName, delta) {
-      const idx = cart.findIndex(item => item.name === itemName);
-      if (idx !== -1) {
-        cart[idx].qty += delta;
-        if (cart[idx].qty < 1) cart[idx].qty = 1;
-        saveCart();
-        renderCart();
-      }
-    }
+function handleRemove(itemName) {
+  cart = cart.filter(item => item.name !== itemName);
+  saveCart();
+  renderCart();
+}
 
-    function handleRemove(itemName) {
-      cart = cart.filter(item => item.name !== itemName);
-      saveCart();
-      renderCart();
-    }
+function handleEmptyCart() {
+  if (confirm("Are you sure you want to empty your cart?")) {
+    cart = [];
+    saveCart();
+    renderCart();
+  }
+}
 
-    function handleEmptyCart() {
-      if (confirm("Are you sure you want to empty your cart?")) {
-        cart = [];
-        saveCart();
-        renderCart();
-      }
-    }
+function getProductByName(name) {
+  return productData.find(p => p.name === name);
+}
 
-    function getProductByName(name) {
-      return productData.find(p => p.name === name);
-    }
+function getTotal() {
+  return cart.reduce((sum, item) => {
+    const product = getProductByName(item.name);
+    if (!product) return sum;
+    return sum + product.price * item.qty;
+  }, 0);
+}
 
-    function getTotal() {
-      return cart.reduce((sum, item) => {
-        const product = getProductByName(item.name);
-        if (!product) return sum;
-        return sum + product.price * item.qty;
-      }, 0);
-    }
+function renderCart() {
+  const cartContainer = document.getElementById('cart-items');
+  const cartSummary = document.getElementById('cart-summary');
+  const cartActions = document.getElementById('cart-actions');
+  cartContainer.innerHTML = '';
+  cartSummary.innerHTML = '';
+  cartActions.innerHTML = '';
 
-    // UPDATED FUNCTION: Only shows selling price (₹product.price)
-    function renderCart() {
-      const cartContainer = document.getElementById('cart-items');
-      const cartSummary = document.getElementById('cart-summary');
-      const cartActions = document.getElementById('cart-actions');
-      cartContainer.innerHTML = '';
-      cartSummary.innerHTML = '';
-      cartActions.innerHTML = '';
+  if (cart.length === 0) {
+    cartContainer.innerHTML = '<div class="empty-cart">Your cart is empty.</div>';
+    return;
+  }
 
-      if (cart.length === 0) {
-        cartContainer.innerHTML = '<div class="empty-cart">Your cart is empty.</div>';
-        return;
-      }
+  cart.forEach(item => {
+    const product = getProductByName(item.name) || {};
+    const div = document.createElement('div');
+    div.className = 'cart-item';
+    div.innerHTML = `
+      <img src="${product.image || 'placeholder.png'}" alt="${item.name}">
+      <div class="cart-item-details">
+        <div class="cart-item-title">${product.name || item.name}</div>
+        <div class="cart-item-brand">${product.brand || ''}</div>
+      </div>
+      <div class="cart-item-price">
+        <span class="selling">₹${product.price || '-'}</span>
+      </div>
+      <div class="cart-qty-controls">
+        <button onclick="handleQtyChange('${item.name}', -1)">-</button>
+        <span>${item.qty}</span>
+        <button onclick="handleQtyChange('${item.name}', 1)">+</button>
+      </div>
+      <div class="cart-item-subtotal">₹${product.price * item.qty}</div>
+      <button class="cart-item-remove" onclick="handleRemove('${item.name}')" title="Remove from cart">&times;</button>
+    `;
+    cartContainer.appendChild(div);
+  });
 
-      cart.forEach(item => {
-        const product = getProductByName(item.name) || {};
-        const div = document.createElement('div');
-        div.className = 'cart-item';
-        div.innerHTML = `
-          <img src="${product.image || 'placeholder.png'}" alt="${item.name}">
-          <div class="cart-item-details">
-            <div class="cart-item-title">${product.name || item.name}</div>
-            <div class="cart-item-brand">${product.brand || ''}</div>
-          </div>
-          <div class="cart-item-price">
-            <span class="selling">₹${product.price || '-'}</span>
-          </div>
-          <div class="cart-qty-controls">
-            <button onclick="handleQtyChange('${item.name}', -1)">-</button>
-            <span>${item.qty}</span>
-            <button onclick="handleQtyChange('${item.name}', 1)">+</button>
-          </div>
-          <div class="cart-item-subtotal">₹${product.price * item.qty}</div>
-          <button class="cart-item-remove" onclick="handleRemove('${item.name}')" title="Remove from cart">&times;</button>
-        `;
-        cartContainer.appendChild(div);
-      });
+  cartSummary.innerHTML = `
+    <span class="cart-total-label">Cart Total:</span>
+    <span class="cart-total-value">₹${getTotal()}</span>
+  `;
 
-      cartSummary.innerHTML = `
-        <span class="cart-total-label">Cart Total:</span>
-        <span class="cart-total-value">₹${getTotal()}</span>
-      `;
+  cartActions.innerHTML = `
+    <button class="btn btn-danger" onclick="handleEmptyCart()">Empty Cart</button>
+    <a class="btn" href="payment.html">Proceed to Payment</a>
+  `;
+}
 
-      cartActions.innerHTML = `
-        <button class="btn btn-danger" onclick="handleEmptyCart()">Empty Cart</button>
-        <a class="btn" href="payment.html">Proceed to Payment</a>
-      `;
-    }
+window.handleQtyChange = handleQtyChange;
+window.handleRemove = handleRemove;
+window.handleEmptyCart = handleEmptyCart;
 
-    window.handleQtyChange = handleQtyChange;
-    window.handleRemove = handleRemove;
-    window.handleEmptyCart = handleEmptyCart;
-
-    document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
+  fetch('products.json')
+    .then(res => res.json())
+    .then(data => {
+      productData = data;
       const storedCart = localStorage.getItem('cart');
       cart = storedCart ? JSON.parse(storedCart) : [];
       updateCartCount();
       renderCart();
     });
-  </script>
+});
+</script>
 </body>
 </html>

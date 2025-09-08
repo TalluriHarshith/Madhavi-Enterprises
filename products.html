@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Products – Madhavi Enterprises</title>
   <style>
-    /* --- Your existing styles, unchanged --- */
+  
     :root {
       --primary: #0066c0;
       --primary-dark: #004a8f;
@@ -225,100 +225,71 @@
   <main>
     <h1>Our Featured Products</h1>
     <div class="products-grid" id="products-grid">
-      <!-- Products will be rendered here -->
+      
     </div>
   </main>
   <script>
-    // Edit this array to change product details!
-    const productData = [
-      {
-        name: "Pen Alpha",
-        image: "hauser pen.jpg",
-        brand: "hauser",
-        price: 8,
-        mrp: 10,
-        discount: 20
-      },
-      {
-        name: "Marker Bold",
-        image: "ai pens.jpg",
-        brand: "classic",
-        price: 35,
-        mrp: 50,
-        discount: 30
-      },
-      {
-        name: "Notebook Pro",
-        image: "pen1.jpeg",
-        brand: "Madhavi",
-        price: 85,
-        mrp: 120,
-        discount: 29
-      },
-      {
-        name: "School Bag",
-        image: "pen2.png",
-        brand: "Madhavi",
-        price: 799,
-        mrp: 999,
-        discount: 20
-      }
-    ];
+let productData = [];
 
-    function getCart() {
-      return JSON.parse(localStorage.getItem('cart') || '[]');
-    }
-    function setCart(cart) {
-      localStorage.setItem('cart', JSON.stringify(cart));
-    }
+function getCart() {
+  return JSON.parse(localStorage.getItem('cart') || '[]');
+}
+function setCart(cart) {
+  localStorage.setItem('cart', JSON.stringify(cart));
+}
 
-    function addToCart(productName) {
-      let cart = getCart();
-      const idx = cart.findIndex(item => item.name === productName);
-      if (idx !== -1) {
-        cart[idx].qty += 1;
-      } else {
-        cart.push({ name: productName, qty: 1 });
-      }
-      setCart(cart);
-      updateCartBadge();
-    }
+function addToCart(productName) {
+  let cart = getCart();
+  const idx = cart.findIndex(item => item.name === productName);
+  if (idx !== -1) {
+    cart[idx].qty += 1;
+  } else {
+    cart.push({ name: productName, qty: 1 });
+  }
+  setCart(cart);
+  updateCartBadge();
+}
 
-    function renderProducts() {
-      const grid = document.getElementById('products-grid');
-      grid.innerHTML = '';
-      productData.forEach((p, idx) => {
-        const card = document.createElement('div');
-        card.className = 'product-card';
-        card.innerHTML = `
-          <img src="${p.image}" alt="${p.name}">
-          <h2>${p.name}</h2>
-          <div class="brand">${p.brand}</div>
-          <div class="price">
-            <span class="selling">₹${p.price}</span>
-            <span class="mrp">₹${p.mrp}</span>
-            <span class="discount">(${p.discount}% off)</span>
-          </div>
-          <button onclick="addToCart('${p.name}')">Add to Cart</button>
-        `;
-        grid.appendChild(card);
-      });
-    }
+function renderProducts() {
+  const grid = document.getElementById('products-grid');
+  grid.innerHTML = '';
+  productData.forEach((p, idx) => {
+    const card = document.createElement('div');
+    card.className = 'product-card';
+    card.innerHTML = `
+      <img src="${p.image}" alt="${p.name}">
+      <h2>${p.name}</h2>
+      <div class="brand">${p.brand}</div>
+      <div class="price">
+        <span class="selling">₹${p.price}</span>
+        <span class="mrp">₹${p.mrp}</span>
+        <span class="discount">(${p.discount}% off)</span>
+      </div>
+      <button onclick="addToCart('${p.name}')">Add to Cart</button>
+    `;
+    grid.appendChild(card);
+  });
+}
 
-    function updateCartBadge() {
-      const cart = getCart();
-      const count = cart.reduce((sum, item) => sum + item.qty, 0);
-      const badge = document.getElementById('cart-badge');
-      badge.textContent = count;
-      badge.style.display = count > 0 ? 'inline-block' : 'none';
-    }
+function updateCartBadge() {
+  const cart = getCart();
+  const count = cart.reduce((sum, item) => sum + item.qty, 0);
+  const badge = document.getElementById('cart-badge');
+  badge.textContent = count;
+  badge.style.display = count > 0 ? 'inline-block' : 'none';
+}
 
-    window.addToCart = addToCart;
+window.addToCart = addToCart;
 
-    document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
+  fetch('products.json')
+    .then(res => res.json())
+    .then(data => {
+      productData = data;
       renderProducts();
       updateCartBadge();
     });
-  </script>
+});
+</script>
 </body>
 </html>
