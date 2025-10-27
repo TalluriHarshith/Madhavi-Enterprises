@@ -1,7 +1,7 @@
 // Use the same productData format as in cart.html
 const productData = [
   {
-    name: "Pen Alpha",
+    name: "Hauser Ball Pen",
     image: "hauser pen.jpg",
     brand: "hauser",
     price: 20
@@ -15,13 +15,13 @@ const productData = [
   {
     name: "Notebook Pro",
     image: "notebook1.png",
-    brand: "Madhavi",
+    brand: "Reynolds",
     price: 85
   },
   {
     name: "School Bag",
     image: "bag1.png",
-    brand: "Madhavi",
+    brand: "Reynolds",
     price: 799
   }
 ];

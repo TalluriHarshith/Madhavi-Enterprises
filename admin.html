@@ -1,41 +1,148 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8" />
   <title>Admin Orders – Madhavi Enterprises</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     body { font-family: 'Segoe UI', Arial, sans-serif; background: #f3f6fa; margin:0; padding:0;}
-    .container { max-width: 700px; margin: 2rem auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); padding: 2rem;}
-    h1 { color: #0066c0; margin-bottom: 2rem;}
-    .order-row { background: #e5f1ff; border-radius: 8px; padding: 1rem 1.2rem; margin-bottom: 1.1rem; font-size: 1.07rem; color: #003366; }
-    .order-row b { color: #222; }
+    .container { max-width: 900px; margin: 2rem auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); padding: 1.5rem;}
+    h1 { color: #0066c0; margin-bottom: 1rem;}
+    .order-row { background: #fff; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; border:1px solid #e6eefc; display:grid; grid-template-columns: 1fr 300px; gap:12px; align-items:start;}
+    .order-info { font-size: 0.96rem; color:#123;}
+    .order-meta { font-size: 0.9rem; color:#444; display:flex; flex-direction:column; gap:8px;}
+    .order-meta select, .order-meta button, .order-meta input[type="checkbox"] { padding:6px 8px; font-size:0.95rem; }
+    .badge { display:inline-block; padding:4px 8px; border-radius:12px; font-weight:600; font-size:0.85rem; }
+    .badge.pending { background:#fff4e5; color:#9a6400; border:1px solid #ffd8a8; }
+    .badge.success { background:#e9f9ee; color:#0b6a2f; border:1px solid #bbf0c4; }
+    .small { font-size:0.85rem; color:#666; margin-top:6px;}
+    .controls { display:flex; gap:8px; align-items:center; }
+    .btn { background:#0066c0; color:#fff; border:none; padding:8px 10px; border-radius:6px; cursor:pointer; }
+    .btn.ghost { background:#f0f4fb; color:#003366; border:1px solid #dbe8ff; }
+    .muted { color:#777; font-size:0.9rem; }
+    .no-orders { padding:1rem; background:#fff; border-radius:8px; border:1px dashed #d7e8ff; color:#375; }
+    @media (max-width:760px){
+      .order-row { grid-template-columns: 1fr; }
+      .order-meta { width:100%; }
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Admin: Orders Received</h1>
     <div id="orders-list"></div>
-    <a href="index.html">Back to Home</a>
+    <div style="margin-top:1rem;">
+      <a href="index.html" class="btn ghost">Back to Home</a>
+      <button id="clearAll" class="btn" style="float:right;background:#c0392b">Clear All Orders</button>
+    </div>
   </div>
+
   <script>
-    const orders = JSON.parse(localStorage.getItem('adminOrders') || '[]');
-    const ordersList = document.getElementById('orders-list');
-    if (!orders.length) {
-      ordersList.innerHTML = '<div class="order-row">No orders received yet.</div>';
-    } else {
-      ordersList.innerHTML = orders.map(order => {
-        let items = order.cart.map(i => `${i.name} × ${i.qty}`).join(', ');
-        return `<div class="order-row">
-          <b>Name:</b> ${order.name}<br>
-          <b>Address:</b> ${order.address}<br>
-          <b>Total:</b> ₹${order.total}<br>
-          <b>Items:</b> ${items}<br>
-          <b>Payment:</b> ${order.paymentMethod.toUpperCase()}${order.upiTxnId ? `<br><b>UPI Txn ID:</b> ${order.upiTxnId}` : ""}
-          <br><b>Status:</b> ${order.status}<br>
-          <b>Order Time:</b> ${order.orderTime}
-        </div>`;
-      }).join('');
+    // Order status flow
+    const STATUS_FLOW = ['Pending','Payment Verified','Dispatched','In Transit','Out for Delivery','Delivered'];
+
+    function loadOrders(){
+      return JSON.parse(localStorage.getItem('adminOrders') || '[]');
     }
+    function saveOrders(orders){
+      localStorage.setItem('adminOrders', JSON.stringify(orders));
+    }
+
+    function renderOrders(){
+      const orders = loadOrders();
+      const container = document.getElementById('orders-list');
+      if (!orders || !orders.length) {
+        container.innerHTML = '<div class="no-orders">No orders received yet.</div>';
+        return;
+      }
+
+      container.innerHTML = orders.map((order, idx) => {
+        const items = (order.cart || []).map(i => `${i.name} × ${i.qty}`).join(', ');
+        const status = order.status || 'Pending';
+        const paymentReceived = !!order.paymentReceived;
+        const badgeClass = (status === 'Pending') ? 'badge pending' : 'badge success';
+        const paymentText = paymentReceived ? 'Received' : 'Pending';
+        const orderTime = order.orderTime || '';
+        // build status options html
+        const options = STATUS_FLOW.map(s => `<option value="${s}" ${s===status ? 'selected':''}>${s}</option>`).join('');
+        return `
+          <div class="order-row" data-idx="${idx}">
+            <div class="order-info">
+              <div><b>Name:</b> ${escapeHtml(order.name || '')}</div>
+              <div class="small"><b>Address:</b> ${escapeHtml(order.address || '')}</div>
+              <div class="small"><b>Items:</b> ${escapeHtml(items)}</div>
+              <div class="small"><b>Total:</b> ₹${order.total || 0} &nbsp; <span class="${badgeClass}">${escapeHtml(status)}</span></div>
+              <div class="small"><b>Payment:</b> <span class="${paymentReceived ? 'badge success' : 'badge pending'}">${paymentText}</span></div>
+              <div class="small"><b>Order Time:</b> ${escapeHtml(orderTime)}</div>
+              ${order.upiTxnId ? `<div class="small"><b>UPI Txn ID:</b> ${escapeHtml(order.upiTxnId)}</div>` : ''}
+            </div>
+
+            <div class="order-meta">
+              <label>Change status</label>
+              <select class="status-select">${options}</select>
+
+              <label style="display:flex;align-items:center;gap:8px;">
+                <input type="checkbox" class="payment-check" ${paymentReceived ? 'checked' : ''} />
+                Mark payment received
+              </label>
+
+              <div class="controls">
+                <button class="btn save">Save</button>
+                <button class="btn ghost delete">Delete</button>
+              </div>
+
+              <div class="muted">Index: ${idx} — use Save to persist changes</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      // attach event handlers
+      container.querySelectorAll('.order-row').forEach(row => {
+        const idx = Number(row.dataset.idx);
+        row.querySelector('.save').addEventListener('click', () => saveOrderChanges(idx, row));
+        row.querySelector('.delete').addEventListener('click', () => deleteOrder(idx));
+      });
+    }
+
+    function saveOrderChanges(idx, rowEl){
+      const orders = loadOrders();
+      if (!orders[idx]) return alert('Order not found');
+      const sel = rowEl.querySelector('.status-select').value;
+      const paymentChecked = rowEl.querySelector('.payment-check').checked;
+      orders[idx].status = sel;
+      orders[idx].paymentReceived = !!paymentChecked;
+      if (paymentChecked) {
+        orders[idx].paymentVerifiedAt = orders[idx].paymentVerifiedAt || new Date().toLocaleString();
+      } else {
+        delete orders[idx].paymentVerifiedAt;
+      }
+      saveOrders(orders);
+      renderOrders();
+      alert('Order updated.');
+    }
+
+    function deleteOrder(idx){
+      if (!confirm('Delete this order permanently?')) return;
+      const orders = loadOrders();
+      orders.splice(idx,1);
+      saveOrders(orders);
+      renderOrders();
+    }
+
+    // Clear all orders
+    document.getElementById('clearAll').addEventListener('click', () => {
+      if (!confirm('Clear all stored orders? This cannot be undone.')) return;
+      localStorage.removeItem('adminOrders');
+      renderOrders();
+    });
+
+    // Basic HTML escape for safety in innerHTML usage
+    function escapeHtml(str){
+      return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // Initialize
+    renderOrders();
   </script>
 </body>
 </html>

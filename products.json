@@ -1,6 +1,6 @@
 [
   {
-    "name": "Pen Alpha",
+    "name": "Hauser Ball Pen",
     "image": "hauser pen.jpg",
     "brand": "hauser",
     "price": 8,
@@ -10,7 +10,7 @@
   {
     "name": "Marker Bold",
     "image": "ai pens.jpg",
-    "brand": "classic",
+    "brand": "flair",
     "price": 8,
     "mrp": 10,
     "discount": 20
@@ -18,7 +18,7 @@
   {
     "name": "Notebook Pro",
     "image": "pen1.jpeg",
-    "brand": "Madhavi",
+    "brand": "Reynolds",
     "price": 18,
     "mrp": 20,
     "discount": 10
@@ -26,7 +26,7 @@
   {
     "name": "School Bag",
     "image": "pen2.png",
-    "brand": "Madhavi",
+    "brand": "Reynolds",
     "price": 22,
     "mrp": 25,
     "discount": 5

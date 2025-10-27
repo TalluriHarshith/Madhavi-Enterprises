@@ -5,11 +5,7 @@
   <title>Madhavi Enterprises</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -18,35 +14,24 @@
     }
 
     header {
-    background-color: #000745;
-    padding: 20px;
-    color: #fff;
+      background-color: #000745;
+      padding: 20px;
+      color: #fff;
     }
 
     .header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
     }
 
-  h1 {
-  margin: 0;
-  flex: 1;
-  text-align: center;
-  font-size: 28px;
-  }
+    h1 { margin: 0; font-size: 28px; text-align: left; color: #ead216; }
 
-  nav {
-  display: flex;
-  gap: 15px;
-  }
-
-  nav a {
-  color: #ead216;
-  text-decoration: none;
-  font-weight: bold;
-  }
-
+    nav { display: flex; gap: 15px; align-items: center; }
+    nav a { color: #ead216; text-decoration: none; font-weight: bold; }
 
     .hero {
       text-align: center;
@@ -54,16 +39,8 @@
       background: linear-gradient(to right, #d4af37, #fff8dc);
     }
 
-    .hero h2 {
-      font-size: 28px;
-      margin-bottom: 10px;
-    }
-
-    .hero p {
-      font-size: 18px;
-      margin-bottom: 20px;
-    }
-
+    .hero h2 { font-size: 28px; margin-bottom: 10px; }
+    .hero p { font-size: 18px; margin-bottom: 20px; }
     .btn {
       background-color: #222;
       color: #fff;
@@ -71,15 +48,11 @@
       text-decoration: none;
       border-radius: 5px;
       font-size: 16px;
+      border: none;
+      cursor: pointer;
     }
 
-    .products {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-      padding: 30px 10px;
-    }
+    .products { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; padding: 30px 10px; }
 
     .product-card {
       background-color: #fff;
@@ -88,96 +61,92 @@
       text-align: center;
       width: 250px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
-    .product-card img {
-      width: 100%;
-      height: auto;
-      margin-bottom: 10px;
-    }
+    .product-card img { width: 100%; height: auto; margin-bottom: 10px; object-fit: contain; }
+    .product-card h3 { font-size: 20px; margin-bottom: 5px; }
+    .product-card p { font-size: 16px; margin-bottom: 10px; }
 
-    .product-card h3 {
-      font-size: 20px;
-      margin-bottom: 5px;
-    }
+    footer { background-color: #222; color: #fff; text-align: center; padding: 20px; font-size: 14px; }
 
-    .product-card p {
-      font-size: 16px;
-      margin-bottom: 10px;
-    }
-
-    .product-card button {
-      background-color: #222;
-      color: #fff;
-      border: none;
-      padding: 10px;
-      cursor: pointer;
-      width: 100%;
-      font-size: 16px;
-    }
-
-    footer {
-      background-color: #222;
-      color: #fff;
-      text-align: center;
-      padding: 20px;
-      font-size: 14px;
-    }
     .brand-grid {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 40px;
-  padding: 30px;
-}
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 40px;
+      padding: 30px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
 
-.brand-grid img {
-  width: 180px;
-  height: auto;
-  cursor: pointer;
-  transition: transform 0.3s ease;
-}
+    .brand-grid a { display: inline-block; }
+    .brand-grid img {
+      width: 180px;
+      height: auto;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+      border-radius: 8px;
+      border: 1px solid #e6e6e6;
+      background: #fff;
+      padding: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
 
-.brand-grid img:hover {
-  transform: scale(1.05);
-}
+    .brand-grid img:hover { transform: scale(1.05); }
 
-
+    /* Brand products area (hidden until a brand is clicked) */
+    .brand-products {
+      max-width: 1200px;
+      margin: 30px auto;
+      padding: 0 20px 30px;
+      display: none;
+    }
+    .brand-products h3 {
+      text-align: center;
+      margin-bottom: 12px;
+      color: #003366;
+    }
+    .brand-products .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 18px;
+    }
+    .brand-products .product-card {
+      text-align: center;
+      padding: 12px;
+    }
+    .brand-products .product-card img {
+      width: 100%;
+      height: 140px;
+      object-fit: contain;
+      margin-bottom: 8px;
+    }
 
     @media (max-width: 600px) {
-      .hero h2 {
-        font-size: 22px;
-      }
-
-      .hero p {
-        font-size: 16px;
-      }
-
-      nav a {
-        display: block;
-        margin: 5px 0;
-      }
-
-      .product-card {
-        width: 90%;
-      }
+      .hero h2 { font-size: 22px; }
+      .hero p { font-size: 16px; }
+      nav a { display: block; margin: 5px 0; }
+      .product-card { width: 90%; }
+      .brand-grid img { width: 140px; }
     }
   </style>
 </head>
 <body>
   <header>
-    <div class="header-content"></div>
-    <h1>Madhavi Enterprises</h1>
-    <nav>
-  <a href="index.html">Home</a>
-  <a href="products.html">Products</a>
-  <a href="about.html">About</a>
-  <a href="contact.html">Contact</a>
-  <a href="conformation page.html">Final</a>
-  <a href="cart.html">cart</a>
+    <div class="header-content">
+      <h1>Madhavi Enterprises</h1>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="products.html">Products</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+        <a href="Order-Status.html">Orders</a>
+        <a href="cart.html">Cart</a>
+      </nav>
     </div>
-</nav>
-
   </header>
 
   <section class="hero">
@@ -187,45 +156,125 @@
   </section>
 
   <section class="brand-logos">
-  <h2 style="text-align:center; margin: 30px 0;">Choose a Brand</h2>
-  <div class="brand-grid">
-    <a href="hauser.html">
-      <img src="hauser pen.jpg" alt="Hauser" />
-    </a>
-    <a href="flair.html">
-      <img src="flair pen.jpeg" alt="Flair" />
-    </a>
-    <a href="hauser.html">
-      <img src="REYNOLDS PEN.png" alt="Hauser" />
-    </a>
-    <a href="hauser.html">
-      <img src="PARKER PEN.png" alt="Hauser" />
-    </a>
-    <a href="hauser.html">
-      <img src="CELLO PEN.jpeg" alt="Hauser" />
-    </a>
-    <a href="hauser.html">
-      <img src="ai pens.jpg" alt="Hauser" />
-    </a>
-    <a href="hauser.html">
-      <img src="pen brand.png" alt="Hauser" />
-    </a>
-    <a href="hauser.html">
-      <img src="linc pen.jpeg" alt="Hauser" />
-    </a>
-    <a href="hauser.html">
-      <img src="rorito pen.png" alt="Hauser" />
-    </a>
-    <a href="hauser.html">
-      <img src="flair pen2.jpeg" alt="Hauser" />
-    </a>
-    <!-- Add more brands here -->
-  </div>
-  
-</section>
+    <h2 style="text-align:center; margin: 30px 0;">Choose a Brand</h2>
+    <div class="brand-grid">
+      <!-- Use data-brand for matching with products.javascript.js brand field -->
+      <a href="#" class="brand-link" data-brand="hauser"><img src="hauserbrand.jpg" alt="Hauser" /></a>
+      <a href="#" class="brand-link" data-brand="camlin"><img src="camilnbrand.png" alt="Camlin" /></a>
+      <a href="#" class="brand-link" data-brand="reynolds"><img src="REYNOLDS PEN.png" alt="Reynolds" /></a>
+      <a href="#" class="brand-link" data-brand="parker"><img src="PARKER PEN.png" alt="Parker" /></a>
+      <a href="#" class="brand-link" data-brand="cello"><img src="CELLO PEN.jpeg" alt="Cello" /></a>
+      <a href="#" class="brand-link" data-brand="classic"><img src="penbrand.png" alt="Penbrand" /></a>
+      <a href="#" class="brand-link" data-brand="other"><img src="pen brand.png" alt="Other Brand" /></a>
+      <a href="#" class="brand-link" data-brand="linc"><img src="linc pen.jpeg" alt="Linc" /></a>
+      <a href="#" class="brand-link" data-brand="rorito"><img src="rorito pen.png" alt="Rorito" /></a>
+      <a href="#" class="brand-link" data-brand="flair"><img src="flair pen2.jpeg" alt="Flair 2" /></a>
+    </div>
+  </section>
+
+  <!-- Brand products (hidden until a brand is clicked) -->
+  <section id="brand-products" class="brand-products" aria-hidden="true">
+    <h3>Brand: <span id="brand-title"></span></h3>
+    <div class="products-grid" id="brand-products-grid"></div>
+    <div style="text-align:center; margin-top:12px;">
+      <button id="close-brand" class="btn">Close</button>
+    </div>
+  </section>
 
   <footer>
     <p>&copy; 2025 Madhavi Enterprises. All rights reserved.</p>
   </footer>
+
+  <!-- load local products file first so index can use its productData -->
+  <script src="products.javascript.js"></script>
+
+  <script>
+  (function(){
+    let allProducts = [];
+
+    // Prefer productData from products.javascript.js when available.
+    function fetchProductsOnce(){
+      if (window.productData && Array.isArray(window.productData) && window.productData.length) {
+        allProducts = window.productData;
+        return Promise.resolve(allProducts);
+      }
+      return fetch('products.json')
+        .then(r => {
+          if (!r.ok) throw new Error('products.json not found');
+          return r.json();
+        })
+        .then(data => { allProducts = data; return data; })
+        .catch(() => {
+          allProducts = Array.isArray(window.productData) ? window.productData : [];
+          return allProducts;
+        });
+    }
+
+    function addToCartByName(name) {
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      const idx = cart.findIndex(i => i.name === name);
+      if (idx !== -1) cart[idx].qty += 1;
+      else cart.push({ name: name, qty: 1 });
+      localStorage.setItem('cart', JSON.stringify(cart));
+      alert('Added to cart: ' + name);
+    }
+
+    function renderBrandProducts(brand){
+      const grid = document.getElementById('brand-products-grid');
+      grid.innerHTML = '';
+      const matches = allProducts.filter(p => (p.brand || '').toLowerCase().includes(brand.toLowerCase()));
+      if(matches.length === 0){
+        grid.innerHTML = '<p style="grid-column:1/-1; text-align:center;">No products found for this brand.</p>';
+        return;
+      }
+      matches.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        const img = document.createElement('img');
+        img.src = p.image || '';
+        img.alt = p.name || 'product';
+        const title = document.createElement('h3');
+        title.textContent = p.name || 'Product';
+        const price = document.createElement('div');
+        price.style.color = '#666';
+        price.style.fontSize = '0.95rem';
+        price.textContent = '₹' + (p.price || '0');
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.textContent = 'Add to Cart';
+        btn.addEventListener('click', function(){ addToCartByName(p.name); });
+        card.appendChild(img);
+        card.appendChild(title);
+        card.appendChild(price);
+        card.appendChild(btn);
+        grid.appendChild(card);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function(){
+      fetchProductsOnce().catch(() => { allProducts = Array.isArray(window.productData) ? window.productData : []; });
+
+      document.querySelectorAll('.brand-link').forEach(a => {
+        a.addEventListener('click', function(evt){
+          evt.preventDefault();
+          const brand = (this.dataset.brand || this.querySelector('img').alt || 'Brand').toString();
+          document.getElementById('brand-title').textContent = brand;
+          renderBrandProducts(brand);
+          const section = document.getElementById('brand-products');
+          section.style.display = 'block';
+          section.setAttribute('aria-hidden', 'false');
+          section.scrollIntoView({behavior:'smooth'});
+        });
+      });
+
+      document.getElementById('close-brand').addEventListener('click', function(){
+        const section = document.getElementById('brand-products');
+        section.style.display = 'none';
+        section.setAttribute('aria-hidden', 'true');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
+  })();
+  </script>
 </body>
 </html>
