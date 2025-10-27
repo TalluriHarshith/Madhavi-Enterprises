@@ -1,31 +1,393 @@
 <!DOCTYPE html>
-<html>
-<head><title>Login</title></head>
-<body>
-  <h2>Login</h2>
-  <form id="loginForm">
-    <input type="email" name="email" placeholder="Email" required />
-    <input type="password" name="password" placeholder="Password" required />
-    <button type="submit">Login</button>
-  </form>
-
-  <script type="module">
-    import { auth } from './firebase.js';
-    import { signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
-
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const form = new FormData(e.target);
-      const email = form.get('email');
-      const password = form.get('password');
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-        alert('Login successful!');
-        window.location.href = 'protected.html';
-      } catch (err) {
-        alert('Login failed: ' + err.message);
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Your Cart – Madhavi Enterprises</title>
+  <style>
+    :root {
+      --primary: #0066c0;
+      --primary-dark: #004a8f;
+      --background: #f3f6fa;
+      --card-bg: #fff;
+      --border: #e0e6ed;
+      --radius: 12px;
+      --shadow: 0 2px 12px rgba(0,0,0,0.07);
+      --brand: #7a8499;
+      --discount: #1a7f37;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--background);
+      color: #222;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      min-height: 100vh;
+    }
+    header.site-header {
+      background: var(--card-bg);
+      box-shadow: var(--shadow);
+      padding: 1.5rem 2rem 1rem 2rem;
+      margin-bottom: 2.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+    }
+    nav.nav-bar {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+    }
+    nav.nav-bar a {
+      text-decoration: none;
+      color: #555;
+      font-weight: 500;
+      transition: color 0.2s;
+      position: relative;
+      padding: 0.2rem 0.3rem;
+    }
+    nav.nav-bar a.active,
+    nav.nav-bar a:hover {
+      color: var(--primary);
+    }
+    nav.nav-bar .cart-link {
+      display: flex;
+      align-items: center;
+      gap: 0.4em;
+      font-weight: bold;
+    }
+    nav.nav-bar .cart-count {
+      background: var(--primary);
+      color: #fff;
+      border-radius: 50%;
+      padding: 0.15em 0.6em;
+      font-size: 0.95em;
+      margin-left: 0.15em;
+      min-width: 1.8em;
+      text-align: center;
+      display: inline-block;
+    }
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 1.5rem 2rem 1.5rem;
+    }
+    main h1 {
+      font-size: 2.1rem;
+      font-weight: 700;
+      margin-bottom: 2rem;
+      text-align: center;
+      color: var(--primary-dark);
+    }
+    .cart-items {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 2rem 1.5rem 1.5rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .cart-item {
+      display: grid;
+      grid-template-columns: 90px 1fr 120px 100px 80px 60px;
+      align-items: center;
+      border-bottom: 1px solid #f0f0f0;
+      padding: 1.1rem 0;
+      gap: 1.2rem;
+    }
+    .cart-item:last-child {
+      border-bottom: none;
+    }
+    .cart-item img {
+      width: 70px;
+      height: 70px;
+      object-fit: contain;
+      border-radius: 8px;
+      background: #f6faff;
+      border: 1px solid #e7edf5;
+    }
+    .cart-item-details {
+      flex: 1;
+    }
+    .cart-item-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 0.2rem;
+    }
+    .cart-item-brand {
+      color: var(--brand);
+      font-size: 0.96rem;
+      margin-bottom: 0.3rem;
+    }
+    .cart-qty-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      justify-content: center;
+    }
+    .cart-qty-controls button {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 26px;
+      height: 26px;
+      font-size: 1.15rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .cart-qty-controls button:hover {
+      background: var(--primary-dark);
+    }
+    .cart-item-price {
+      color: #333;
+      font-size: 1.07rem;
+      font-weight: 500;
+      margin-bottom: 0.3rem;
+      text-align: center;
+    }
+    .cart-item-subtotal {
+      color: var(--discount);
+      font-weight: bold;
+      font-size: 1.07rem;
+      margin-top: 0.25rem;
+      text-align: center;
+    }
+    .cart-item-remove {
+      background: #ff5d5d;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      font-size: 1.19rem;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .cart-item-remove:hover {
+      background: #e32e2e;
+    }
+    .cart-summary {
+      text-align: right;
+      margin-bottom: 1.3rem;
+      font-size: 1.15rem;
+    }
+    .cart-total-label {
+      font-weight: bold;
+      font-size: 1.18rem;
+      margin-right: 0.7rem;
+    }
+    .cart-total-value {
+      font-size: 1.25rem;
+      color: var(--primary-dark);
+      font-weight: 700;
+    }
+    .cart-actions {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    .btn {
+      display: inline-block;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      padding: 0.68rem 1.5rem;
+      font-size: 1.07rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.18s;
+      box-shadow: 0 2px 6px rgba(0,102,192,0.04);
+      text-align: center;
+      text-decoration: none;
+      margin: 0 0.5em;
+    }
+    .btn:hover {
+      background: var(--primary-dark);
+      transform: scale(1.04);
+    }
+    .btn-danger {
+      background: #ff5d5d;
+    }
+    .btn-danger:hover {
+      background: #e32e2e;
+    }
+    .empty-cart {
+      text-align: center;
+      color: #888;
+      font-size: 1.2rem;
+      margin: 2.5rem 0;
+    }
+    @media (max-width: 900px) {
+      .cart-item {
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        gap: 0.6rem;
+        font-size: 0.96rem;
       }
+      .cart-item img {
+        width: 50px;
+        height: 50px;
+      }
+    }
+    @media (max-width: 650px) {
+      .cart-item {
+        grid-template-columns: 1fr 2fr 1fr;
+        gap: 0.4rem;
+        font-size: 0.93rem;
+      }
+      .cart-item img {
+        width: 40px;
+        height: 40px;
+      }
+      .cart-summary, .cart-actions {
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav-bar">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="products.html">Products</a>
+      <a href="conformation page.html">Final</a>
+      <a href="cart.html" class="cart-link active">
+        Cart
+        <span class="cart-count">0</span>
+      </a>
+    </nav>
+  </header>
+  <main>
+    <h1>Your Cart</h1>
+    <div class="cart-items" id="cart-items">
+      <!-- Cart items will be rendered here -->
+    </div>
+    <div class="cart-summary" id="cart-summary"></div>
+    <div class="cart-actions" id="cart-actions"></div>
+    <div style="text-align: center;">
+      <a href="products.html" class="btn">← Back to Products</a>
+    </div>
+  </main>
+  <script>
+let productData = [];
+let cart = [];
+
+function updateCartCount() {
+  const count = cart.reduce((sum, item) => sum + item.qty, 0);
+  document.querySelectorAll('.cart-count').forEach(span => {
+    span.textContent = count;
+  });
+}
+
+function saveCart() {
+  localStorage.setItem('cart', JSON.stringify(cart));
+  updateCartCount();
+}
+
+function handleQtyChange(itemName, delta) {
+  const idx = cart.findIndex(item => item.name === itemName);
+  if (idx !== -1) {
+    cart[idx].qty += delta;
+    if (cart[idx].qty < 1) cart[idx].qty = 1;
+    saveCart();
+    renderCart();
+  }
+}
+
+function handleRemove(itemName) {
+  cart = cart.filter(item => item.name !== itemName);
+  saveCart();
+  renderCart();
+}
+
+function handleEmptyCart() {
+  if (confirm("Are you sure you want to empty your cart?")) {
+    cart = [];
+    saveCart();
+    renderCart();
+  }
+}
+
+function getProductByName(name) {
+  return productData.find(p => p.name === name);
+}
+
+function getTotal() {
+  return cart.reduce((sum, item) => {
+    const product = getProductByName(item.name);
+    if (!product) return sum;
+    return sum + product.price * item.qty;
+  }, 0);
+}
+
+function renderCart() {
+  const cartContainer = document.getElementById('cart-items');
+  const cartSummary = document.getElementById('cart-summary');
+  const cartActions = document.getElementById('cart-actions');
+  cartContainer.innerHTML = '';
+  cartSummary.innerHTML = '';
+  cartActions.innerHTML = '';
+
+  if (cart.length === 0) {
+    cartContainer.innerHTML = '<div class="empty-cart">Your cart is empty.</div>';
+    return;
+  }
+
+  cart.forEach(item => {
+    const product = getProductByName(item.name) || {};
+    const div = document.createElement('div');
+    div.className = 'cart-item';
+    div.innerHTML = `
+      <img src="${product.image || 'placeholder.png'}" alt="${item.name}">
+      <div class="cart-item-details">
+        <div class="cart-item-title">${product.name || item.name}</div>
+        <div class="cart-item-brand">${product.brand || ''}</div>
+      </div>
+      <div class="cart-item-price">
+        <span class="selling">₹${product.price || '-'}</span>
+      </div>
+      <div class="cart-qty-controls">
+        <button onclick="handleQtyChange('${item.name}', -1)">-</button>
+        <span>${item.qty}</span>
+        <button onclick="handleQtyChange('${item.name}', 1)">+</button>
+      </div>
+      <div class="cart-item-subtotal">₹${product.price * item.qty}</div>
+      <button class="cart-item-remove" onclick="handleRemove('${item.name}')" title="Remove from cart">&times;</button>
+    `;
+    cartContainer.appendChild(div);
+  });
+
+  cartSummary.innerHTML = `
+    <span class="cart-total-label">Cart Total:</span>
+    <span class="cart-total-value">₹${getTotal()}</span>
+  `;
+
+  cartActions.innerHTML = `
+    <button class="btn btn-danger" onclick="handleEmptyCart()">Empty Cart</button>
+    <a class="btn" href="payment.html">Proceed to Payment</a>
+  `;
+}
+
+window.handleQtyChange = handleQtyChange;
+window.handleRemove = handleRemove;
+window.handleEmptyCart = handleEmptyCart;
+
+document.addEventListener("DOMContentLoaded", () => {
+  fetch('products.json')
+    .then(res => res.json())
+    .then(data => {
+      productData = data;
+      const storedCart = localStorage.getItem('cart');
+      cart = storedCart ? JSON.parse(storedCart) : [];
+      updateCartCount();
+      renderCart();
     });
-  </script>
+});
+</script>
 </body>
 </html>

@@ -1,29 +1,28 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head><title>Register</title></head>
+<head><meta charset="utf-8"><title>Register</title></head>
 <body>
-  <h2>Register</h2>
+  <h1>Register</h1>
   <form id="registerForm">
-    <input type="email" name="email" placeholder="Email" required />
-    <input type="password" name="password" placeholder="Password" required />
-    <button type="submit">Sign Up</button>
+    <input name="email" type="email" placeholder="Email" required />
+    <input name="password" type="password" placeholder="Password" required />
+    <button type="submit">Register</button>
   </form>
+  <p>Already have an account? <a href="index.html">Login</a></p>
 
   <script type="module">
     import { auth } from './firebase.js';
     import { createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
 
-    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    document.getElementById('registerForm').addEventListener('submit', async e => {
       e.preventDefault();
-      const form = new FormData(e.target);
-      const email = form.get('email');
-      const password = form.get('password');
+      const fd = new FormData(e.target);
       try {
-        await createUserWithEmailAndPassword(auth, email, password);
-        alert('Registered successfully!');
-        window.location.href = 'index.html';
+        const cred = await createUserWithEmailAndPassword(auth, fd.get('email'), fd.get('password'));
+        // Optionally create a Firestore profile after signup using cred.user.uid
+        window.location.href = '/protected.html';
       } catch (err) {
-        alert('Error: ' + err.message);
+        alert('Register failed: ' + err.message);
       }
     });
   </script>
