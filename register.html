@@ -1,28 +1,140 @@
-<!doctype html>
-<html>
-<head><meta charset="utf-8"><title>Register</title></head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register – Madhavi Enterprises</title>
+  <style>
+    :root {
+      --primary: #0066c0;
+      --primary-dark: #004a8f;
+      --background: #f3f6fa;
+      --card-bg: #fff;
+      --border: #e0e6ed;
+      --radius: 14px;
+      --shadow: 0 6px 20px rgba(0,0,0,0.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: var(--background);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 1rem;
+    }
+    .register-container {
+      background: var(--card-bg);
+      padding: 2.5rem 2rem;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      animation: fadeIn 0.8s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .register-container h1 {
+      margin-bottom: 1.5rem;
+      color: var(--primary-dark);
+      font-size: 2rem;
+      font-weight: 700;
+    }
+    .form-group {
+      margin-bottom: 1.2rem;
+      text-align: left;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.4rem;
+      font-weight: 600;
+      color: #333;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: all 0.25s ease;
+      background: #fdfdfd;
+    }
+    .form-group input:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 4px rgba(0,102,192,0.15);
+      transform: scale(1.02);
+    }
+    .btn {
+      width: 100%;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 0.9rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.18s;
+      box-shadow: 0 4px 12px rgba(0,102,192,0.25);
+    }
+    .btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px) scale(1.02);
+    }
+    .extra-links {
+      margin-top: 1.2rem;
+      font-size: 0.95rem;
+    }
+    .extra-links a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+    .extra-links a:hover {
+      color: var(--primary-dark);
+      text-decoration: underline;
+    }
+  </style>
+</head>
 <body>
-  <h1>Register</h1>
-  <form id="registerForm">
-    <input name="email" type="email" placeholder="Email" required />
-    <input name="password" type="password" placeholder="Password" required />
-    <button type="submit">Register</button>
-  </form>
-  <p>Already have an account? <a href="index.html">Login</a></p>
+  <div class="register-container">
+    <h1>Create Account</h1>
+    <form id="registerForm">
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" placeholder="Enter your email" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Create a password" required>
+      </div>
+      <button type="submit" class="btn">Register</button>
+    </form>
+    <div class="extra-links">
+      <p>Already have an account? <a href="login.html">Login</a></p>
+    </div>
+  </div>
 
   <script type="module">
     import { auth } from './firebase.js';
-    import { createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+    import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
-    document.getElementById('registerForm').addEventListener('submit', async e => {
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const fd = new FormData(e.target);
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
       try {
-        const cred = await createUserWithEmailAndPassword(auth, fd.get('email'), fd.get('password'));
-        // Optionally create a Firestore profile after signup using cred.user.uid
-        window.location.href = '/protected.html';
+        await createUserWithEmailAndPassword(auth, email, password);
+        alert("Registration successful!");
+        window.location.href = "login.html";
       } catch (err) {
-        alert('Register failed: ' + err.message);
+        alert(err.message);
       }
     });
   </script>

@@ -22,7 +22,13 @@ const productData = [
     name: "School Bag",
     image: "bag1.png",
     brand: "Reynolds",
-    price: 799
+    price: 10
+  },
+  {
+    name: "hauser",
+    image: "hauser2.jpg",
+    brand: "hauser",
+    price: 10
   }
 ];
 

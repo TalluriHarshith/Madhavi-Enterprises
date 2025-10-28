@@ -209,111 +209,129 @@
     </form>
     <a href="cart.html" class="back-link">← Back to Cart</a>
   </main>
-  <script>
-let productData = [];
-let cart = [];
+<script type="module">
+  import { auth, db } from './firebase.js';
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+  import { collection, getDocs, addDoc, serverTimestamp } 
+    from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-function updateCartCount() {
-  const count = cart.reduce((sum, item) => sum + item.qty, 0);
-  document.querySelectorAll('.cart-count').forEach(span => {
-    span.textContent = count;
-  });
-}
+  let productData = [];
+  let cart = [];
 
-function getProductByName(name) {
-  return productData.find(p => p.name === name);
-}
-
-function getTotal() {
-  return cart.reduce((sum, item) => {
-    const product = getProductByName(item.name);
-    if (!product) return sum;
-    return sum + product.price * item.qty;
-  }, 0);
-}
-
-function renderCartSummary() {
-  if (!cart.length) {
-    document.getElementById('cart-summary').innerHTML = 'Your cart is empty. <a href="products.html">Shop now</a>';
-    document.getElementById('paymentForm').style.display = 'none';
-    return;
+  function updateCartCount() {
+    const count = cart.reduce((sum, item) => sum + item.qty, 0);
+    document.querySelectorAll('.cart-count').forEach(span => {
+      span.textContent = count;
+    });
   }
-  let lines = cart.map(item => {
-    const product = getProductByName(item.name);
-    if (!product) return '';
-    return `<span>${item.name} × ${item.qty} = ₹${product.price * item.qty}</span>`;
-  });
-  lines.push(`<strong>Total: ₹${getTotal()}</strong>`);
-  document.getElementById('cart-summary').innerHTML = lines.join('<br>');
-}
 
-function showPaymentFields(method) {
-  document.getElementById('card-fields').style.display = (method === 'card') ? 'block' : 'none';
-  document.getElementById('upi-field').style.display = (method === 'upi') ? 'block' : 'none';
-}
+  function getProductByName(name) {
+    return productData.find(p => p.name === name);
+  }
 
-document.addEventListener("DOMContentLoaded", () => {
-  // Fetch products, then render
-  fetch('products.json')
-    .then(res => res.json())
-    .then(data => {
-      productData = data;
-      cart = JSON.parse(localStorage.getItem('cart') || "[]");
-      updateCartCount();
-      renderCartSummary();
+  function getTotal() {
+    return cart.reduce((sum, item) => {
+      const product = getProductByName(item.name);
+      if (!product) return sum;
+      return sum + product.price * item.qty;
+    }, 0);
+  }
+
+  function renderCartSummary() {
+    if (!cart.length) {
+      document.getElementById('cart-summary').innerHTML = 'Your cart is empty. <a href="products.html">Shop now</a>';
+      document.getElementById('paymentForm').style.display = 'none';
+      return;
+    }
+    let lines = cart.map(item => {
+      const product = getProductByName(item.name);
+      if (!product) return '';
+      return `<span>${item.name} × ${item.qty} = ₹${product.price * item.qty}</span>`;
+    });
+    lines.push(`<strong>Total: ₹${getTotal()}</strong>`);
+    document.getElementById('cart-summary').innerHTML = lines.join('<br>');
+  }
+
+  function showPaymentFields(method) {
+    document.getElementById('card-fields').style.display = (method === 'card') ? 'block' : 'none';
+    document.getElementById('upi-field').style.display = (method === 'upi') ? 'block' : 'none';
+  }
+
+  // Load cart from Firestore
+  async function loadCart(user) {
+    const cartRef = collection(db, "carts", user.uid, "items");
+    const snap = await getDocs(cartRef);
+    cart = snap.docs.map(doc => doc.data());
+    updateCartCount();
+    renderCartSummary();
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    fetch('products.json')
+      .then(res => res.json())
+      .then(data => { productData = data; });
+
+    document.getElementById('paymentMethod').addEventListener('change', (e) => {
+      showPaymentFields(e.target.value);
     });
 
-  document.getElementById('paymentMethod').addEventListener('change', (e) => {
-    showPaymentFields(e.target.value);
-  });
-  document.getElementById('paymentForm').addEventListener('submit', function(e){
-    e.preventDefault();
-    // Basic validation for card/upi fields
-    const method = document.getElementById('paymentMethod').value;
-    if (method === "card") {
-      if (!document.getElementById('cardNumber').value.trim() ||
-          !document.getElementById('expiry').value.trim() ||
-          !document.getElementById('cvv').value.trim()) {
-        alert("Please fill in all card details.");
-        return;
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "login.html";
+      } else {
+        loadCart(user);
+        document.getElementById('paymentForm').addEventListener('submit', async function(e){
+          e.preventDefault();
+
+          const method = document.getElementById('paymentMethod').value;
+          if (method === "card") {
+            if (!document.getElementById('cardNumber').value.trim() ||
+                !document.getElementById('expiry').value.trim() ||
+                !document.getElementById('cvv').value.trim()) {
+              alert("Please fill in all card details.");
+              return;
+            }
+          }
+          let upiTxnId = "";
+          if (method === "upi") {
+            upiTxnId = document.getElementById('upiTxnId').value.trim();
+            if (!upiTxnId) {
+              alert("Please enter your UPI Transaction ID.");
+              return;
+            }
+          }
+
+          const order = {
+            name: document.getElementById('fullname').value,
+            address: document.getElementById('address').value,
+            paymentMethod: method,
+            upiTxnId: upiTxnId,
+            cart: cart,
+            total: getTotal(),
+            orderTime: new Date().toLocaleString(),
+            createdAt: serverTimestamp(),
+            status: "Processing"
+          };
+
+          // Save order in Firestore
+          await addDoc(collection(db, "orders", user.uid, "userOrders"), order);
+
+          // WhatsApp notification
+          const adminNumber = "8074610410"; // your number
+          const productList = cart.map(i => `${i.name} × ${i.qty}`).join(', ');
+          let waMsg = `New Order!\nName: ${order.name}\nAddress: ${order.address}\nTotal: ₹${order.total}\nItems: ${productList}\nMethod: ${method.toUpperCase()}`;
+          if (method === "upi") waMsg += `\nUPI Txn ID: ${upiTxnId}`;
+          waMsg += `\nTime: ${order.orderTime}`;
+          window.open(`https://wa.me/${adminNumber}?text=${encodeURIComponent(waMsg)}`, "_blank");
+
+          // Clear cart in Firestore (optional)
+          // You can delete items from "carts/{uid}/items" if you want
+
+          window.location.href = "orders.html";
+        });
       }
-    }
-    let upiTxnId = "";
-    if (method === "upi") {
-      upiTxnId = document.getElementById('upiTxnId').value.trim();
-      if (!upiTxnId) {
-        alert("Please enter your UPI Transaction ID.");
-        return;
-      }
-    }
-    // Save order info in localStorage for order-status page
-    const order = {
-      name: document.getElementById('fullname').value,
-      address: document.getElementById('address').value,
-      paymentMethod: method,
-      upiTxnId: upiTxnId,
-      cart: cart,
-      total: getTotal(),
-      orderTime: new Date().toLocaleString(),
-      status: "Processing"
-    };
-    // Send order to WhatsApp admin
-    const adminNumber = "8074610410"; // UPDATE with your WhatsApp number!
-    const productList = cart.map(i => `${i.name} × ${i.qty}`).join(', ');
-    let waMsg = `New Order!\nName: ${order.name}\nAddress: ${order.address}\nTotal: ₹${order.total}\nItems: ${productList}\nMethod: ${method.toUpperCase()}`;
-    if (method === "upi") waMsg += `\nUPI Txn ID: ${upiTxnId}`;
-    waMsg += `\nTime: ${order.orderTime}`;
-    window.open(`https://wa.me/${adminNumber}?text=${encodeURIComponent(waMsg)}`, "_blank");
-    // Store order
-    localStorage.setItem('lastOrder', JSON.stringify(order));
-    // Also save to admin orders list
-    let adminOrders = JSON.parse(localStorage.getItem('adminOrders') || "[]");
-    adminOrders.push(order);
-    localStorage.setItem('adminOrders', JSON.stringify(adminOrders));
-    localStorage.removeItem('cart');
-    window.location.href = "order-status.html";
+    });
   });
-});
 </script>
 </body>
 </html>

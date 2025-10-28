@@ -63,7 +63,6 @@
         const badgeClass = (status === 'Pending') ? 'badge pending' : 'badge success';
         const paymentText = paymentReceived ? 'Received' : 'Pending';
         const orderTime = order.orderTime || '';
-        // build status options html
         const options = STATUS_FLOW.map(s => `<option value="${s}" ${s===status ? 'selected':''}>${s}</option>`).join('');
         return `
           <div class="order-row" data-idx="${idx}">
@@ -96,7 +95,6 @@
           </div>
         `;
       }).join('');
-      // attach event handlers
       container.querySelectorAll('.order-row').forEach(row => {
         const idx = Number(row.dataset.idx);
         row.querySelector('.save').addEventListener('click', () => saveOrderChanges(idx, row));
@@ -136,12 +134,10 @@
       renderOrders();
     });
 
-    // Basic HTML escape for safety in innerHTML usage
     function escapeHtml(str){
       return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
-    // Initialize
     renderOrders();
   </script>
 </body>

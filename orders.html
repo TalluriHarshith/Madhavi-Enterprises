@@ -212,51 +212,79 @@
     <a href="products.html" class="btn">← Continue Shopping</a>
     <a href="admin.html" id="admin-btn" class="admin-btn" style="display:none;">View Admin Orders</a>
   </main>
-  <script>
-    function updateCartCount() {
-      document.querySelectorAll('.cart-count').forEach(span => {
-        span.textContent = 0;
-      });
-    }
-    function renderOrder() {
-      const box = document.getElementById('order-box');
-      const order = JSON.parse(localStorage.getItem('lastOrder') || "null");
-      if (!order) {
+  <script type="module">
+  import { auth, db } from './firebase.js';
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+  import { collection, getDocs, query, orderBy, limit } 
+    from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+  function updateCartCount() {
+    document.querySelectorAll('.cart-count').forEach(span => {
+      span.textContent = 0;
+    });
+  }
+
+  async function renderOrder(user) {
+    const box = document.getElementById('order-box');
+    const ordersRef = collection(db, "orders", user.uid, "userOrders");
+    const q = query(ordersRef, orderBy("createdAt", "desc"), limit(1));
+    const snap = await getDocs(q);
+
+    if (snap.empty) {
+      // fallback to localStorage if no Firestore order found
+      const localOrder = JSON.parse(localStorage.getItem('lastOrder') || "null");
+      if (!localOrder) {
         box.innerHTML = "<div class='empty-order'>No recent order found.<br><a href='products.html'>Shop now</a></div>";
         document.getElementById('admin-btn').style.display = "none";
         return;
       }
-      let payment =
-        order.paymentMethod === "cod"
-          ? "Cash on Delivery"
-          : order.paymentMethod === "card"
-          ? "Credit/Debit Card"
-          : "UPI";
-      let itemsHtml = order.cart
-        .map((item) => `<li>${item.name} × ${item.qty}</li>`)
-        .join("");
-      box.innerHTML = `
-        <div class="order-success">🎉 Thank you, your order has been placed!</div>
-        <div class="order-status">Order Status: <b>${order.status}</b></div>
-        <div class="order-info">
-          <b>Name:</b> ${order.name}<br>
-          <b>Address:</b> ${order.address.replace(/\n/g, "<br>")}<br>
-          <b>Payment:</b> ${payment}${order.paymentMethod === "upi" && order.upiTxnId
-            ? `<br><b>UPI Txn ID:</b> ${order.upiTxnId}` : ""}<br>
-          <b>Order Time:</b> ${order.orderTime}
-        </div>
-        <div class="order-items">
-          <b>Items:</b>
-          <ul>${itemsHtml}</ul>
-        </div>
-        <div class="order-total">Total Paid: ₹${order.total}</div>
-      `;
-      // Show admin link
-      document.getElementById('admin-btn').style.display = "block";
-      // Clear the cart count (cart is already cleared)
-      updateCartCount();
+      displayOrder(localOrder);
+    } else {
+      const order = snap.docs[0].data();
+      displayOrder(order);
     }
-    document.addEventListener("DOMContentLoaded", renderOrder);
-  </script>
+  }
+
+  function displayOrder(order) {
+    const box = document.getElementById('order-box');
+    let payment =
+      order.paymentMethod === "cod"
+        ? "Cash on Delivery"
+        : order.paymentMethod === "card"
+        ? "Credit/Debit Card"
+        : "UPI";
+
+    let itemsHtml = order.cart
+      .map((item) => `<li>${item.name} × ${item.qty}</li>`)
+      .join("");
+
+    box.innerHTML = `
+      <div class="order-success">🎉 Thank you, your order has been placed!</div>
+      <div class="order-status">Order Status: <b>${order.status}</b></div>
+      <div class="order-info">
+        <b>Name:</b> ${order.name}<br>
+        <b>Address:</b> ${order.address.replace(/\n/g, "<br>")}<br>
+        <b>Payment:</b> ${payment}${order.paymentMethod === "upi" && order.upiTxnId
+          ? `<br><b>UPI Txn ID:</b> ${order.upiTxnId}` : ""}<br>
+        <b>Order Time:</b> ${order.orderTime}
+      </div>
+      <div class="order-items">
+        <b>Items:</b>
+        <ul>${itemsHtml}</ul>
+      </div>
+      <div class="order-total">Total Paid: ₹${order.total}</div>
+    `;
+    document.getElementById('admin-btn').style.display = "block";
+    updateCartCount();
+  }
+
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      window.location.href = "login.html";
+    } else {
+      renderOrder(user);
+    }
+  });
+</script>
 </body>
 </html>

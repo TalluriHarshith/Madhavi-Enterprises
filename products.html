@@ -211,11 +211,12 @@
       <a href="index.html">Home</a>
       <a href="about.html">About</a>
       <a href="products.html" class="active">Products</a>
-      <a href="conformation page.html">Final</a>
+      <a href="orders.html">Orders</a>
       <a href="cart.html" class="cart-link">
         Cart
         <span class="cart-count" id="cart-badge">0</span>
       </a>
+       <button id="logoutBtn" class="btn">Logout</button>
     </nav>
     <form class="search-wrap" onsubmit="event.preventDefault(); alert('Search coming soon!');">
       <input type="text" placeholder="Search products…" aria-label="Search products" />
@@ -228,68 +229,123 @@
       
     </div>
   </main>
-  <script>
-let productData = [];
+  <script type="module">
+  import { auth, db } from './firebase.js';
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+  import { 
+    collection, addDoc, getDocs, query, where, updateDoc, doc, onSnapshot 
+  } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-function getCart() {
-  return JSON.parse(localStorage.getItem('cart') || '[]');
-}
-function setCart(cart) {
-  localStorage.setItem('cart', JSON.stringify(cart));
-}
+  let productData = [];
+  let currentUser = null;
 
-function addToCart(productName) {
-  let cart = getCart();
-  const idx = cart.findIndex(item => item.name === productName);
-  if (idx !== -1) {
-    cart[idx].qty += 1;
-  } else {
-    cart.push({ name: productName, qty: 1 });
-  }
-  setCart(cart);
-  updateCartBadge();
-}
-
-function renderProducts() {
-  const grid = document.getElementById('products-grid');
-  grid.innerHTML = '';
-  productData.forEach((p, idx) => {
-    const card = document.createElement('div');
-    card.className = 'product-card';
-    card.innerHTML = `
-      <img src="${p.image}" alt="${p.name}">
-      <h2>${p.name}</h2>
-      <div class="brand">${p.brand}</div>
-      <div class="price">
-        <span class="selling">₹${p.price}</span>
-        <span class="mrp">₹${p.mrp}</span>
-        <span class="discount">(${p.discount}% off)</span>
-      </div>
-      <button onclick="addToCart('${p.name}')">Add to Cart</button>
-    `;
-    grid.appendChild(card);
+  // Watch login state
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      window.location.href = "login.html"; // force login
+    } else {
+      currentUser = user;
+      listenToCart(); // start real-time listener
+    }
   });
-}
+  async function addToCart(productName) {
+    if (!currentUser) {
+      alert("Please login first");
+      return;
+    }
 
-function updateCartBadge() {
-  const cart = getCart();
-  const count = cart.reduce((sum, item) => sum + item.qty, 0);
-  const badge = document.getElementById('cart-badge');
-  badge.textContent = count;
-  badge.style.display = count > 0 ? 'inline-block' : 'none';
-}
+    const product = productData.find(p => p.name === productName);
+    if (!product) return;
 
-window.addToCart = addToCart;
+    const itemsRef = collection(db, "carts", currentUser.uid, "items");
 
-document.addEventListener('DOMContentLoaded', function() {
-  fetch('products.json')
-    .then(res => res.json())
-    .then(data => {
-      productData = data;
-      renderProducts();
-      updateCartBadge();
+    // Check if item already exists
+    const q = query(itemsRef, where("name", "==", product.name));
+    const snap = await getDocs(q);
+
+    if (!snap.empty) {
+      // Update quantity
+      const docRef = doc(db, "carts", currentUser.uid, "items", snap.docs[0].id);
+      const existing = snap.docs[0].data();
+      await updateDoc(docRef, { qty: existing.qty + 1 });
+    } else {
+      // Add new item
+      await addDoc(itemsRef, {
+        name: product.name,
+        brand: product.brand,
+        price: product.price,
+        image: product.image,
+        qty: 1
+      });
+    }
+
+    alert(`${product.name} added to cart!`);
+  }
+
+  // Render product cards
+  function renderProducts() {
+    const grid = document.getElementById('products-grid');
+    grid.innerHTML = '';
+    productData.forEach((p) => {
+      const card = document.createElement('div');
+      card.className = 'product-card';
+      card.innerHTML = `
+        <img src="${p.image}" alt="${p.name}">
+        <h2>${p.name}</h2>
+        <div class="brand">${p.brand}</div>
+        <div class="price">
+          <span class="selling">₹${p.price}</span>
+          <span class="mrp">₹${p.mrp}</span>
+          <span class="discount">(${p.discount}% off)</span>
+        </div>
+        <button onclick="addToCart('${p.name}')">Add to Cart</button>
+      `;
+      grid.appendChild(card);
     });
-});
+  }
+
+  // Real-time cart badge listener
+  function listenToCart() {
+    const itemsRef = collection(db, "carts", currentUser.uid, "items");
+    onSnapshot(itemsRef, (snapshot) => {
+      let count = 0;
+      snapshot.forEach(doc => { count += doc.data().qty; });
+      const badge = document.getElementById('cart-badge');
+      badge.textContent = count;
+      badge.style.display = count > 0 ? 'inline-block' : 'none';
+    });
+  }
+
+  // Expose globally
+  window.addToCart = addToCart;
+
+  // Load products
+  document.addEventListener('DOMContentLoaded', function() {
+    fetch('products.json')
+      .then(res => res.json())
+      .then(data => {
+        productData = data;
+        renderProducts();
+      });
+  });
+</script>
+  <script type="module">
+  import { auth } from './firebase.js';
+  import { signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        await signOut(auth);
+        alert("You have been logged out.");
+        window.location.href = "login.html"; // redirect to login
+      } catch (err) {
+        console.error("Logout error:", err);
+        alert("Error logging out: " + err.message);
+      }
+    });
+  }
 </script>
 </body>
 </html>

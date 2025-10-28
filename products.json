@@ -8,15 +8,7 @@
     "discount": 20
   },
   {
-    "name": "Marker Bold",
-    "image": "ai pens.jpg",
-    "brand": "flair",
-    "price": 8,
-    "mrp": 10,
-    "discount": 20
-  },
-  {
-    "name": "Notebook Pro",
+    "name": "Octance Pen",
     "image": "pen1.jpeg",
     "brand": "Reynolds",
     "price": 18,
@@ -24,17 +16,161 @@
     "discount": 10
   },
   {
-    "name": "School Bag",
+    "name": "Octance Pen colour",
     "image": "pen2.png",
     "brand": "Reynolds",
-    "price": 22,
-    "mrp": 25,
+    "price": 19,
+    "mrp": 20,
     "discount": 5
   },
   {
-    "name": "Pen set",
+    "name": "Hauser XO Pen set 100",
     "image": "pen3.jpeg",
-    "brand": "Madhavi",
+    "brand": "hauser",
+    "price": 6,
+    "mrp": 10,
+    "discount": 40
+  },
+  {
+    "name": "Hauser Pen",
+    "image": "hauser2.jpg",
+    "brand": "hauser",
+    "price": 12,
+    "mrp": 15,
+    "discount": 20
+  },
+  {
+    "name": "Hauser Pen1",
+    "image": "hauser3.jpg",
+    "brand": "hauser",
+    "price": 8,
+    "mrp": 10,
+    "discount": 20
+  },
+  {
+    "name": "Hauser Pen2",
+    "image": "hauser4.jpg",
+    "brand": "hauser",
+    "price": 8,
+    "mrp": 10,
+    "discount": 20
+  },
+  {
+    "name": "Camlin Pen1",
+    "image": "camlin1.jpg",
+    "brand": "camlin",
+    "price": 9,
+    "mrp": 10,
+    "discount": 10
+  },
+  {
+    "name": "Camlin Pen2",
+    "image": "camlin2.jpg",
+    "brand": "camlin",
+    "price": 8,
+    "mrp": 10,
+    "discount": 20
+  },
+  {
+    "name": "Camlin Pen3",
+    "image": "camlin3.jpg",
+    "brand": "camlin",
+    "price": 7,
+    "mrp": 10,
+    "discount": 30
+  },
+  {
+    "name": "Cardin Pen1",
+    "image": "cardin1.jpg",
+    "brand": "cardin",
+    "price": 600,
+    "mrp": 1000,
+    "discount": 40
+  },
+  {
+    "name": "Cardin Pen2",
+    "image": "cardin2.jpg",
+    "brand": "cardin",
+    "price": 1600,
+    "mrp": 20000,
+    "discount": 20
+  },
+  {
+    "name": "Cardin Pen3",
+    "image": "cardin3.jpg",
+    "brand": "cardin",
+    "price": 700,
+    "mrp": 1000,
+    "discount": 30
+  },
+  {
+    "name": "Parker Pen1",
+    "image": "parker1.jpg",
+    "brand": "parker",
+    "price": 40,
+    "mrp": 50,
+    "discount": 20
+  },
+  {
+    "name": "Parker Pen2",
+    "image": "parker2.jpg",
+    "brand": "parker",
+    "price": 80,
+    "mrp": 100,
+    "discount": 20
+  },
+  {
+    "name": "Parker Pen3",
+    "image": "parker3.jpg",
+    "brand": "parker",
+    "price": 120,
+    "mrp": 150,
+    "discount": 20
+  },
+  {
+    "name": "Linc Pen3",
+    "image": "linc1.jpg",
+    "brand": "linc",
+    "price": 10,
+    "mrp": 15,
+    "discount": 33
+  },
+  {
+    "name": "Linc Pen1",
+    "image": "linc2.jpg",
+    "brand": "linc",
+    "price": 12,
+    "mrp": 15,
+    "discount": 20
+  },
+  {
+    "name": "Linc Pen2",
+    "image": "linc3.jpg",
+    "brand": "linc",
+    "price": 14,
+    "mrp": 20,
+    "discount": 30
+  },
+  {
+    "name": "Rorito Pen1",
+    "image": "rorito1.jpg",
+    "brand": "rorito",
+    "price": 10,
+    "mrp": 12,
+    "discount": 16
+  },
+  {
+    "name": "Rorito Pen2",
+    "image": "rorito2.jpg",
+    "brand": "rorito",
+    "price": 8,
+    "mrp": 10,
+    "discount": 20
+  },
+  {
+    "name": "Rorito Pen3",
+    "image": "rorito3.jpg",
+    "brand": "rorito",
     "price": 6,
     "mrp": 10,
     "discount": 40
