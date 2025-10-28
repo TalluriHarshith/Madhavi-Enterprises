@@ -264,144 +264,130 @@
   </header>
   <main>
     <h1>Your Cart</h1>
-    <div class="cart-items" id="cart-items"></div>
+    <div class="cart-items" id="cart-items">
+      <!-- Cart items will be rendered here -->
+    </div>
     <div class="cart-summary" id="cart-summary"></div>
     <div class="cart-actions" id="cart-actions"></div>
     <div style="text-align: center;">
       <a href="products.html" class="btn">← Back to Products</a>
     </div>
   </main>
+  <script>
+let productData = [];
+let cart = [];
 
-  <script type="module">
-    import { auth, db } from './firebase.js';
-    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
-    import { collection, getDocs, updateDoc, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+function updateCartCount() {
+  const count = cart.reduce((sum, item) => sum + item.qty, 0);
+  document.querySelectorAll('.cart-count').forEach(span => {
+    span.textContent = count;
+  });
+}
 
-    let productData = [];
-    let cart = [];
-    let currentUser = null;
+function saveCart() {
+  localStorage.setItem('cart', JSON.stringify(cart));
+  updateCartCount();
+}
 
-    function updateCartCount() {
-      const count = cart.reduce((sum, item) => sum + item.qty, 0);
-      document.querySelectorAll('.cart-count').forEach(span => {
-        span.textContent = count;
-      });
-    }
+function handleQtyChange(itemName, delta) {
+  const idx = cart.findIndex(item => item.name === itemName);
+  if (idx !== -1) {
+    cart[idx].qty += delta;
+    if (cart[idx].qty < 1) cart[idx].qty = 1;
+    saveCart();
+    renderCart();
+  }
+}
 
-    async function loadCart() {
-      if (!currentUser) return;
-      cart = [];
-      const snap = await getDocs(collection(db, 'carts', currentUser.uid, 'items'));
-      snap.forEach(d => cart.push({ id: d.id, ...d.data() }));
-      renderCart();
-    }
+function handleRemove(itemName) {
+  cart = cart.filter(item => item.name !== itemName);
+  saveCart();
+  renderCart();
+}
 
-    async function handleQtyChange(itemId, delta) {
-      const idx = cart.findIndex(item => item.id === itemId);
-      if (idx !== -1) {
-        cart[idx].qty += delta;
-        if (cart[idx].qty < 1) cart[idx].qty = 1;
-        await updateDoc(doc(db, 'carts', currentUser.uid, 'items', itemId), { qty: cart[idx].qty });
-        renderCart();
-      }
-    }
+function handleEmptyCart() {
+  if (confirm("Are you sure you want to empty your cart?")) {
+    cart = [];
+    saveCart();
+    renderCart();
+  }
+}
 
-    async function handleRemove(itemId) {
-      await deleteDoc(doc(db, 'carts', currentUser.uid, 'items', itemId));
-      cart = cart.filter(item => item.id !== itemId);
-      renderCart();
-    }
+function getProductByName(name) {
+  return productData.find(p => p.name === name);
+}
 
-    async function handleEmptyCart() {
-      if (confirm("Are you sure you want to empty your cart?")) {
-        for (const item of cart) {
-          await deleteDoc(doc(db, 'carts', currentUser.uid, 'items', item.id));
-        }
-        cart = [];
-        renderCart();
-      }
-    }
+function getTotal() {
+  return cart.reduce((sum, item) => {
+    const product = getProductByName(item.name);
+    if (!product) return sum;
+    return sum + product.price * item.qty;
+  }, 0);
+}
 
-    function getProductByName(name) {
-      return productData.find(p => p.name === name);
-    }
+function renderCart() {
+  const cartContainer = document.getElementById('cart-items');
+  const cartSummary = document.getElementById('cart-summary');
+  const cartActions = document.getElementById('cart-actions');
+  cartContainer.innerHTML = '';
+  cartSummary.innerHTML = '';
+  cartActions.innerHTML = '';
 
-    function getTotal() {
-      return cart.reduce((sum, item) => {
-        const product = getProductByName(item.name);
-        return sum + ((product?.price || 0) * item.qty);
-      }, 0);
-    }
+  if (cart.length === 0) {
+    cartContainer.innerHTML = '<div class="empty-cart">Your cart is empty.</div>';
+    return;
+  }
 
-    function renderCart() {
-      const cartContainer = document.getElementById('cart-items');
-      const cartSummary = document.getElementById('cart-summary');
-      const cartActions = document.getElementById('cart-actions');
-      cartContainer.innerHTML = '';
-      cartSummary.innerHTML = '';
-      cartActions.innerHTML = '';
+  cart.forEach(item => {
+    const product = getProductByName(item.name) || {};
+    const div = document.createElement('div');
+    div.className = 'cart-item';
+    div.innerHTML = `
+      <img src="${product.image || 'placeholder.png'}" alt="${item.name}">
+      <div class="cart-item-details">
+        <div class="cart-item-title">${product.name || item.name}</div>
+        <div class="cart-item-brand">${product.brand || ''}</div>
+      </div>
+      <div class="cart-item-price">
+        <span class="selling">₹${product.price || '-'}</span>
+      </div>
+      <div class="cart-qty-controls">
+        <button onclick="handleQtyChange('${item.name}', -1)">-</button>
+        <span>${item.qty}</span>
+        <button onclick="handleQtyChange('${item.name}', 1)">+</button>
+      </div>
+      <div class="cart-item-subtotal">₹${product.price * item.qty}</div>
+      <button class="cart-item-remove" onclick="handleRemove('${item.name}')" title="Remove from cart">&times;</button>
+    `;
+    cartContainer.appendChild(div);
+  });
 
-      if (cart.length === 0) {
-        cartContainer.innerHTML = '<div class="empty-cart">Your cart is empty.</div>';
-        updateCartCount();
-        return;
-      }
+  cartSummary.innerHTML = `
+    <span class="cart-total-label">Cart Total:</span>
+    <span class="cart-total-value">₹${getTotal()}</span>
+  `;
 
-      cart.forEach(item => {
-        const product = getProductByName(item.name) || {};
-        const div = document.createElement('div');
-        div.className = 'cart-item';
-        div.innerHTML = `
-          <img src="${product.image || 'placeholder.png'}" alt="${item.name}">
-          <div class="cart-item-details">
-            <div class="cart-item-title">${product.name || item.name}</div>
-            <div class="cart-item-brand">${product.brand || ''}</div>
-          </div>
-          <div class="cart-item-price">₹${product.price || '-'}</div>
-          <div class="cart-qty-controls">
-            <button onclick="handleQtyChange('${item.id}', -1)">-</button>
-            <span>${item.qty}</span>
-            <button onclick="handleQtyChange('${item.id}', 1)">+</button>
-          </div>
-          <div class="cart-item-subtotal">₹${(product.price || 0) * item.qty}</div>
-          <button class="cart-item-remove" onclick="handleRemove('${item.id}')" title="Remove">&times;</button>
-        `;
-        cartContainer.appendChild(div);
-      });
+  cartActions.innerHTML = `
+    <button class="btn btn-danger" onclick="handleEmptyCart()">Empty Cart</button>
+    <a class="btn" href="payment.html">Proceed to Payment</a>
+  `;
+}
 
-      cartSummary.innerHTML = `
-        <span class="cart-total-label">Cart Total:</span>
-        <span class="cart-total-value">₹${getTotal()}</span>
-      `;
+window.handleQtyChange = handleQtyChange;
+window.handleRemove = handleRemove;
+window.handleEmptyCart = handleEmptyCart;
 
-      cartActions.innerHTML = `
-        <button class="btn btn-danger" onclick="handleEmptyCart()">Empty Cart</button>
-        <a class="btn" href="payment.html">Proceed to Payment</a>
-      `;
-
+document.addEventListener("DOMContentLoaded", () => {
+  fetch('products.json')
+    .then(res => res.json())
+    .then(data => {
+      productData = data;
+      const storedCart = localStorage.getItem('cart');
+      cart = storedCart ? JSON.parse(storedCart) : [];
       updateCartCount();
-    }
-
-    // Expose handlers globally
-    window.handleQtyChange = handleQtyChange;
-    window.handleRemove = handleRemove;
-    window.handleEmptyCart = handleEmptyCart;
-
-    // Init
-    document.addEventListener("DOMContentLoaded", () => {
-      fetch('products.json')
-        .then(res => res.json())
-        .then(data => { productData = data; });
-
-      onAuthStateChanged(auth, (user) => {
-        if (!user) {
-          window.location.href = 'index.html'; // redirect to login
-        } else {
-          currentUser = user;
-          loadCart();
-        }
-      });
+      renderCart();
     });
-  </script>
+});
+</script>
 </body>
 </html>
