@@ -8,7 +8,7 @@
     :root {
       --primary: #0066c0;
       --primary-dark: #004a8f;
-      --background: #e8eaed;
+      --background: #f3f6fa;
       --card-bg: #fff;
       --border: #e0e6ed;
       --radius: 12px;
@@ -212,14 +212,15 @@
 <script type="module">
   import { auth, db } from './firebase.js';
   import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-  import { collection, getDocs, addDoc, serverTimestamp, deleteDoc, doc } 
+  import { collection, getDocs, deleteDoc, doc } 
     from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
   let productData = [];
   let cart = [];
 
+  // --- Helpers ---
   function updateCartCount() {
-    const count = cart.reduce((sum, item) => sum + item.qty, 0);
+    const count = cart.reduce((sum, item) => sum + (item.qty || 1), 0);
     document.querySelectorAll('.cart-count').forEach(span => {
       span.textContent = count;
     });
@@ -232,24 +233,24 @@
   function getTotal() {
     return cart.reduce((sum, item) => {
       const product = getProductByName(item.name);
-      if (!product) return sum;
-      return sum + product.price * item.qty;
+      return sum + ((product?.price || 0) * (item.qty || 1));
     }, 0);
   }
 
   function renderCartSummary() {
+    const box = document.getElementById('cart-summary');
+    const form = document.getElementById('paymentForm');
     if (!cart.length) {
-      document.getElementById('cart-summary').innerHTML = 'Your cart is empty. <a href="products.html">Shop now</a>';
-      document.getElementById('paymentForm').style.display = 'none';
+      box.innerHTML = 'Your cart is empty. <a href="products.html">Shop now</a>';
+      form.style.display = 'none';
       return;
     }
-    let lines = cart.map(item => {
-      const product = getProductByName(item.name);
-      if (!product) return '';
-      return `<span>${item.name} × ${item.qty} = ₹${product.price * item.qty}</span>`;
+    const lines = cart.map(i => {
+      const p = getProductByName(i.name);
+      return `<span>${i.name} × ${i.qty} = ₹${(p?.price || 0) * (i.qty || 1)}</span>`;
     });
     lines.push(`<strong>Total: ₹${getTotal()}</strong>`);
-    document.getElementById('cart-summary').innerHTML = lines.join('<br>');
+    box.innerHTML = lines.join('<br>');
   }
 
   function showPaymentFields(method) {
@@ -257,16 +258,31 @@
     document.getElementById('upi-field').style.display = (method === 'upi') ? 'block' : 'none';
   }
 
-  // Load cart from Firestore
+  // --- LocalStorage order save ---
+  function saveOrderToLocal(order) {
+    const orders = JSON.parse(localStorage.getItem("orders") || "[]");
+    orders.unshift(order); // newest first
+    localStorage.setItem("orders", JSON.stringify(orders));
+  }
+
+  // --- Load cart from Firestore (carts/{uid}/items) ---
   async function loadCart(user) {
-    const cartRef = collection(db, "carts", user.uid, "items");
-    const snap = await getDocs(cartRef);
-    cart = snap.docs.map(doc => doc.data());
+    const snap = await getDocs(collection(db, "carts", user.uid, "items"));
+    cart = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     updateCartCount();
     renderCartSummary();
   }
 
+  // --- Clear cart in Firestore after order ---
+  async function clearCart(userId) {
+    const snap = await getDocs(collection(db, "carts", userId, "items"));
+    const deletions = snap.docs.map(d => deleteDoc(doc(db, "carts", userId, "items", d.id)));
+    await Promise.all(deletions);
+  }
+
+  // --- Init ---
   document.addEventListener("DOMContentLoaded", () => {
+    // load products for price lookup
     fetch('products.json')
       .then(res => res.json())
       .then(data => { productData = data; });
@@ -280,88 +296,72 @@
         window.location.href = "login.html";
       } else {
         loadCart(user);
-        document.getElementById('paymentForm').addEventListener('submit', async function(e){
+
+        document.getElementById('paymentForm').addEventListener('submit', async (e) => {
           e.preventDefault();
 
           const method = document.getElementById('paymentMethod').value;
+
+          // simple validations
           if (method === "card") {
-            if (!document.getElementById('cardNumber').value.trim() ||
-                !document.getElementById('expiry').value.trim() ||
-                !document.getElementById('cvv').value.trim()) {
+            const cardNumber = document.getElementById('cardNumber')?.value?.trim();
+            const expiry = document.getElementById('expiry')?.value?.trim();
+            const cvv = document.getElementById('cvv')?.value?.trim();
+            if (!cardNumber || !expiry || !cvv) {
               alert("Please fill in all card details.");
               return;
             }
           }
+
           let upiTxnId = "";
           if (method === "upi") {
-            upiTxnId = document.getElementById('upiTxnId').value.trim();
+            upiTxnId = document.getElementById('upiTxnId')?.value?.trim() || "";
             if (!upiTxnId) {
               alert("Please enter your UPI Transaction ID.");
               return;
             }
           }
 
+          if (!cart.length) {
+            alert("Your cart is empty.");
+            return;
+          }
+
           // Build order object
           const order = {
-            ownerId: user.uid,   // 👈 set the owner here
+            ownerId: user.uid,
             name: document.getElementById('fullname').value,
             address: document.getElementById('address').value,
             paymentMethod: method,
-            upiTxnId: upiTxnId,
-            cart: cart,
+            upiTxnId,
+            cart,
             total: getTotal(),
             orderTime: new Date().toLocaleString(),
-            createdAt: serverTimestamp(),
-            status: "Processing",
+            createdAt: new Date().toISOString(), // plain timestamp
+            status: "Pending",
             paymentReceived: false
           };
 
-          // Save order in Firestore
-          await addDoc(collection(db, "orders", user.uid, "userOrders"), order);
+          // 1) Save to localStorage (so Admin + Order Status pages can read it)
+          saveOrderToLocal(order);
 
-          // WhatsApp notification
-          const adminNumber = "8074610410"; // your number
+          // 2) WhatsApp notification (optional)
+          const adminNumber = "918074610410"; // include country code, no +
           const productList = cart.map(i => `${i.name} × ${i.qty}`).join(', ');
           let waMsg = `New Order!\nName: ${order.name}\nAddress: ${order.address}\nTotal: ₹${order.total}\nItems: ${productList}\nMethod: ${method.toUpperCase()}`;
           if (method === "upi") waMsg += `\nUPI Txn ID: ${upiTxnId}`;
           waMsg += `\nTime: ${order.orderTime}`;
           window.open(`https://wa.me/${adminNumber}?text=${encodeURIComponent(waMsg)}`, "_blank");
 
-          // Clear cart in Firestore (optional)
-          // Example: delete each item
-          // const cartRef = collection(db, "carts", user.uid, "items");
-          // const snap = await getDocs(cartRef);
-          // for (const d of snap.docs) {
-          //   await deleteDoc(doc(db, "carts", user.uid, "items", d.id));
-          // }
+          // 3) Clear cart in Firestore
+          try { await clearCart(user.uid); } catch (e) { console.warn("Cart clear failed:", e); }
 
+          // 4) Redirect to orders page
           window.location.href = "orders.html";
         });
       }
     });
   });
-</script>
-<script>
-  // firebase.js
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID",
-};
-
-const app = initializeApp(firebaseConfig);
-
-// Export Firestore and Auth so you can use them elsewhere
-export const db = getFirestore(app);
-export const auth = getAuth(app);
-
 </script>
 </body>
 </html>
