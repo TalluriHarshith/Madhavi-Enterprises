@@ -37,96 +37,146 @@
     </div>
   </div>
 
-<script type="module">
-  import { auth, db } from './firebase.js';
-  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-  import { collectionGroup, onSnapshot, updateDoc, deleteDoc, query, orderBy } 
-    from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+  <script>
+    // Order status flow
+    const STATUS_FLOW = ['Pending','Payment Verified','Dispatched','In Transit','Out for Delivery','Delivered'];
 
-  const STATUS_FLOW = ['Pending','Payment Verified','Dispatched','In Transit','Out for Delivery','Delivered'];
-
-  onAuthStateChanged(auth, (user) => {
-    if (!user) {
-      window.location.href = "login.html";
-    } else {
-      loadOrders();
+    function loadOrders(){
+      return JSON.parse(localStorage.getItem('adminOrders') || '[]');
     }
-  });
+    function saveOrders(orders){
+      localStorage.setItem('adminOrders', JSON.stringify(orders));
+    }
 
-  function loadOrders() {
-    const ordersDiv = document.getElementById('orders-list');
-    const q = query(collectionGroup(db, "userOrders"), orderBy("createdAt", "desc"));
-
-    // Real-time listener
-    onSnapshot(q, (snap) => {
-      if (snap.empty) {
-        ordersDiv.innerHTML = '<div class="no-orders">No orders received yet.</div>';
+    function renderOrders(){
+      const orders = loadOrders();
+      const container = document.getElementById('orders-list');
+      if (!orders || !orders.length) {
+        container.innerHTML = '<div class="no-orders">No orders received yet.</div>';
         return;
       }
-      ordersDiv.innerHTML = "";
-      snap.forEach(docSnap => {
-        renderOrder(docSnap.data(), docSnap.ref, ordersDiv);
+
+      container.innerHTML = orders.map((order, idx) => {
+        const items = (order.cart || []).map(i => `${i.name} × ${i.qty}`).join(', ');
+        const status = order.status || 'Pending';
+        const paymentReceived = !!order.paymentReceived;
+        const badgeClass = (status === 'Pending') ? 'badge pending' : 'badge success';
+        const paymentText = paymentReceived ? 'Received' : 'Pending';
+        const orderTime = order.orderTime || '';
+        const options = STATUS_FLOW.map(s => `<option value="${s}" ${s===status ? 'selected':''}>${s}</option>`).join('');
+        return `
+          <div class="order-row" data-idx="${idx}">
+            <div class="order-info">
+              <div><b>Name:</b> ${escapeHtml(order.name || '')}</div>
+              <div class="small"><b>Address:</b> ${escapeHtml(order.address || '')}</div>
+              <div class="small"><b>Items:</b> ${escapeHtml(items)}</div>
+              <div class="small"><b>Total:</b> ₹${order.total || 0} &nbsp; <span class="${badgeClass}">${escapeHtml(status)}</span></div>
+              <div class="small"><b>Payment:</b> <span class="${paymentReceived ? 'badge success' : 'badge pending'}">${paymentText}</span></div>
+              <div class="small"><b>Order Time:</b> ${escapeHtml(orderTime)}</div>
+              ${order.upiTxnId ? `<div class="small"><b>UPI Txn ID:</b> ${escapeHtml(order.upiTxnId)}</div>` : ''}
+            </div>
+
+            <div class="order-meta">
+              <label>Change status</label>
+              <select class="status-select">${options}</select>
+
+              <label style="display:flex;align-items:center;gap:8px;">
+                <input type="checkbox" class="payment-check" ${paymentReceived ? 'checked' : ''} />
+                Mark payment received
+              </label>
+
+              <div class="controls">
+                <button class="btn save">Save</button>
+                <button class="btn ghost delete">Delete</button>
+              </div>
+
+              <div class="muted">Index: ${idx} — use Save to persist changes</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      container.querySelectorAll('.order-row').forEach(row => {
+        const idx = Number(row.dataset.idx);
+        row.querySelector('.save').addEventListener('click', () => saveOrderChanges(idx, row));
+        row.querySelector('.delete').addEventListener('click', () => deleteOrder(idx));
       });
+    }
+
+    function saveOrderChanges(idx, rowEl){
+      const orders = loadOrders();
+      if (!orders[idx]) return alert('Order not found');
+      const sel = rowEl.querySelector('.status-select').value;
+      const paymentChecked = rowEl.querySelector('.payment-check').checked;
+      orders[idx].status = sel;
+      orders[idx].paymentReceived = !!paymentChecked;
+      if (paymentChecked) {
+        orders[idx].paymentVerifiedAt = orders[idx].paymentVerifiedAt || new Date().toLocaleString();
+      } else {
+        delete orders[idx].paymentVerifiedAt;
+      }
+      saveOrders(orders);
+      renderOrders();
+      alert('Order updated.');
+    }
+
+    function deleteOrder(idx){
+      if (!confirm('Delete this order permanently?')) return;
+      const orders = loadOrders();
+      orders.splice(idx,1);
+      saveOrders(orders);
+      renderOrders();
+    }
+
+    // Clear all orders
+    document.getElementById('clearAll').addEventListener('click', () => {
+      if (!confirm('Clear all stored orders? This cannot be undone.')) return;
+      localStorage.removeItem('adminOrders');
+      renderOrders();
     });
-  }
 
-  function renderOrder(order, ref, container) {
-    const items = (order.cart || []).map(i => `${i.name} × ${i.qty}`).join(', ');
-    const status = order.status || 'Pending';
-    const paymentReceived = !!order.paymentReceived;
-    const badgeClass = (status === 'Pending') ? 'badge pending' : 'badge success';
-    const paymentText = paymentReceived ? 'Received' : 'Pending';
-    const options = STATUS_FLOW.map(s => `<option value="${s}" ${s===status ? 'selected':''}>${s}</option>`).join('');
+    function escapeHtml(str){
+      return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
 
-    const div = document.createElement("div");
-    div.className = "order-row";
-    div.innerHTML = `
-      <div class="order-info">
-        <div><b>Name:</b> ${escapeHtml(order.name || '')}</div>
-        <div class="small"><b>Address:</b> ${escapeHtml(order.address || '')}</div>
-        <div class="small"><b>Items:</b> ${escapeHtml(items)}</div>
-        <div class="small"><b>Total:</b> ₹${order.total || 0} &nbsp; <span class="${badgeClass}">${escapeHtml(status)}</span></div>
-        <div class="small"><b>Payment:</b> <span class="${paymentReceived ? 'badge success' : 'badge pending'}">${paymentText}</span></div>
-        <div class="small"><b>Order Time:</b> ${escapeHtml(order.orderTime || '')}</div>
-        ${order.upiTxnId ? `<div class="small"><b>UPI Txn ID:</b> ${escapeHtml(order.upiTxnId)}</div>` : ''}
-      </div>
-      <div class="order-meta">
-        <label>Change status</label>
-        <select class="status-select">${options}</select>
-        <label style="display:flex;align-items:center;gap:8px;">
-          <input type="checkbox" class="payment-check" ${paymentReceived ? 'checked' : ''} />
-          Mark payment received
-        </label>
-        <div class="controls">
-          <button class="btn save">Save</button>
-          <button class="btn ghost delete">Delete</button>
-        </div>
-      </div>
-    `;
+    // Initial render from localStorage (which will be kept in sync from Firebase below)
+    renderOrders();
+  </script>
 
-    div.querySelector('.save').addEventListener('click', async () => {
-      const newStatus = div.querySelector('.status-select').value;
-      const paymentChecked = div.querySelector('.payment-check').checked;
-      await updateDoc(ref, {
-        status: newStatus,
-        paymentReceived: paymentChecked
+  <!-- Firebase sync layer: mirrors Firestore orders into localStorage 'adminOrders' -->
+  <script type="module">
+    // 1) Import your firebase.js that exports 'db' (and 'auth' if you need login gating)
+    import { db } from './firebase.js';
+    import { collectionGroup, onSnapshot, query, orderBy } 
+      from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+    // 2) Listen to all userOrders across all users and mirror to localStorage
+    const q = query(collectionGroup(db, "userOrders"), orderBy("createdAt", "desc"));
+
+    onSnapshot(q, (snap) => {
+      const orders = [];
+      snap.forEach(doc => {
+        const data = doc.data() || {};
+        // Normalize fields to match your existing UI expectations
+        orders.push({
+          name: data.name || '',
+          address: data.address || '',
+          cart: Array.isArray(data.cart) ? data.cart : [],
+          total: data.total ?? 0,
+          status: data.status || 'Pending',
+          paymentReceived: !!data.paymentReceived,
+          orderTime: data.orderTime || (data.createdAt && data.createdAt.toDate ? data.createdAt.toDate().toLocaleString() : ''),
+          upiTxnId: data.upiTxnId || ''
+        });
       });
-      alert("Order updated.");
-    });
 
-    div.querySelector('.delete').addEventListener('click', async () => {
-      if (confirm("Delete this order permanently?")) {
-        await deleteDoc(ref);
-        alert("Order deleted.");
+      // 3) Save into localStorage so your original rendering logic remains unchanged
+      localStorage.setItem('adminOrders', JSON.stringify(orders));
+
+      // 4) Trigger a re-render using your existing function
+      if (typeof renderOrders === 'function') {
+        renderOrders();
       }
     });
-
-    container.appendChild(div);
-  }
-
-  function escapeHtml(str){
-    return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-</script>
+  </script>
 </body>
 </html>
