@@ -8,7 +8,7 @@
     :root {
       --primary: #0066c0;
       --primary-dark: #004a8f;
-      --background: #f3f6fa;
+      --background: #e8eaed;
       --card-bg: #fff;
       --border: #e0e6ed;
       --radius: 12px;
@@ -212,7 +212,7 @@
 <script type="module">
   import { auth, db } from './firebase.js';
   import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-  import { collection, getDocs, addDoc, serverTimestamp } 
+  import { collection, getDocs, addDoc, serverTimestamp, deleteDoc, doc } 
     from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
   let productData = [];
@@ -301,7 +301,9 @@
             }
           }
 
+          // Build order object
           const order = {
+            ownerId: user.uid,   // 👈 set the owner here
             name: document.getElementById('fullname').value,
             address: document.getElementById('address').value,
             paymentMethod: method,
@@ -310,7 +312,8 @@
             total: getTotal(),
             orderTime: new Date().toLocaleString(),
             createdAt: serverTimestamp(),
-            status: "Processing"
+            status: "Processing",
+            paymentReceived: false
           };
 
           // Save order in Firestore
@@ -325,13 +328,40 @@
           window.open(`https://wa.me/${adminNumber}?text=${encodeURIComponent(waMsg)}`, "_blank");
 
           // Clear cart in Firestore (optional)
-          // You can delete items from "carts/{uid}/items" if you want
+          // Example: delete each item
+          // const cartRef = collection(db, "carts", user.uid, "items");
+          // const snap = await getDocs(cartRef);
+          // for (const d of snap.docs) {
+          //   await deleteDoc(doc(db, "carts", user.uid, "items", d.id));
+          // }
 
           window.location.href = "orders.html";
         });
       }
     });
   });
+</script>
+<script>
+  // firebase.js
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID",
+};
+
+const app = initializeApp(firebaseConfig);
+
+// Export Firestore and Auth so you can use them elsewhere
+export const db = getFirestore(app);
+export const auth = getAuth(app);
+
 </script>
 </body>
 </html>
